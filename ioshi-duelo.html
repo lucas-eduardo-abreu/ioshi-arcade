@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Duelo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#7fa64f; --matcha-soft:#a7cf72; --gold:#f0b84a; --bad:#e0512f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  #app{position:relative;height:100dvh;width:100vw;overflow:hidden;display:flex;flex-direction:column;}
+
+  .half{flex:1;position:relative;display:grid;place-items:center;cursor:pointer;overflow:hidden;transition:background .12s;}
+  .half .inner{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:16px;}
+  .half.p1{background:linear-gradient(180deg,#3a2410,#241608);}
+  .half.p1 .inner{transform:rotate(180deg);}
+  .half.p2{background:linear-gradient(180deg,#243016,#16200c);}
+  .half.p1.flash{background:linear-gradient(180deg,#8f5416,#5c360d);}
+  .half.p2.flash{background:linear-gradient(180deg,#4d6a26,#31491a);}
+  .half.win{background:linear-gradient(180deg,#b6801f,#7a5514) !important;}
+  .half.lose{filter:brightness(.55) grayscale(.3);}
+
+  .divider{height:6px;background:var(--shu);position:relative;z-index:4;box-shadow:0 0 14px rgba(232,134,46,.5);}
+  .divider::after{content:"VS";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    font-family:'Zen Maru Gothic';font-weight:900;font-size:14px;background:var(--sumi);color:var(--shu-soft);
+    padding:2px 12px;border-radius:20px;border:2px solid var(--shu);letter-spacing:.1em;}
+
+  .ptag{font-family:'Zen Maru Gothic';font-weight:700;font-size:13px;letter-spacing:.16em;text-transform:uppercase;opacity:.7;}
+  .p1 .ptag{color:var(--shu-soft);} .p2 .ptag{color:var(--matcha-soft);}
+  .score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(30px,7vw,52px);line-height:1;}
+  .pips{display:flex;gap:6px;justify-content:center;}
+  .pip{width:12px;height:12px;border-radius:50%;background:rgba(255,255,255,.16);}
+  .p1 .pip.on{background:var(--shu-soft);} .p2 .pip.on{background:var(--matcha-soft);}
+
+  .signal{min-height:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;}
+  .signal .big{font-size:clamp(56px,15vw,96px);line-height:1;}
+  .signal .txt{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(20px,5vw,30px);}
+  .signal.prep .txt{color:#d9cdb4;opacity:.8;} .signal.go .txt{color:var(--gold);}
+  .signal.nogo .txt{color:var(--bad);} .signal.res .txt{color:var(--shu-soft);}
+  @keyframes flashpop{0%{transform:scale(.6);opacity:0;}55%{transform:scale(1.12);}100%{transform:scale(1);opacity:1;}}
+  .signal.go .big,.signal.nogo .big{animation:flashpop .16s ease;}
+  .dots::after{content:"";animation:dots 1.2s steps(4,end) infinite;}
+  @keyframes dots{0%{content:"";}25%{content:"·";}50%{content:"··";}75%{content:"···";}}
+
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:14px;padding:24px;background:rgba(20,14,10,.92);backdrop-filter:blur(3px);}
+  .overlay.hidden{display:none;}
+  .rot{transform:rotate(180deg);}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(30px,7vw,54px);line-height:.98;}
+  .big-title .jp{display:block;font-size:.34em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{max-width:440px;opacity:.85;font-size:15px;line-height:1.5;}
+  .rules{display:flex;gap:20px;flex-wrap:wrap;justify-content:center;}
+  .rules div{display:flex;align-items:center;gap:8px;font-size:14px;} .rules .e{font-size:24px;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #b25e1c,0 12px 20px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #b25e1c,0 8px 14px rgba(0,0,0,.4);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .winline{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(26px,6vw,42px);}
+  .winline.orange{color:var(--shu-soft);} .winline.green{color:var(--matcha-soft);}
+
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;}}
+</style>
+</head>
+<body>
+<a href="index.html" aria-label="Voltar ao menu" style="position:fixed;top:14px;left:14px;z-index:9999;display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.35);color:#f6ecd8;border:1px solid rgba(246,236,216,.25);border-radius:999px;padding:8px 14px 8px 10px;font-family:'M PLUS Rounded 1c',system-ui,sans-serif;font-size:13px;font-weight:700;text-decoration:none;backdrop-filter:blur(2px);">← Menu</a>
+<div id="app">
+  <div class="half p1" id="halfP1">
+    <div class="inner">
+      <div class="ptag">Mesa Laranja</div>
+      <div class="score" id="scoreP1">0</div>
+      <div class="pips" id="pipsP1"></div>
+      <div class="signal prep" id="sigP1"><div class="txt dots">Prepare-se</div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="half p2" id="halfP2">
+    <div class="inner">
+      <div class="ptag">Mesa Verde</div>
+      <div class="score" id="scoreP2">0</div>
+      <div class="pips" id="pipsP2"></div>
+      <div class="signal prep" id="sigP2"><div class="txt dots">Prepare-se</div></div>
+    </div>
+  </div>
+
+  <!-- start -->
+  <div class="overlay" id="startScreen">
+    <div class="rot" style="opacity:.9;"><div class="winline orange">▲ Mesa Laranja</div></div>
+    <div class="big-title"><span class="jp">対決 · DUELO</span>MESA <em>vs</em> MESA</div>
+    <p class="sub">Tablet no meio da mesa, um de cada lado. Quando aparecer <b>sushi</b>, toque no seu lado o mais rápido! Se aparecer <b>wasabi</b>, NÃO toque. Tocar cedo ou no wasabi dá ponto pro adversário.</p>
+    <div class="rules">
+      <div><span class="e">🍣</span> apareceu = toque</div>
+      <div><span class="e">🟢</span> wasabi = segure</div>
+      <div><span class="e">🏆</span> 5 pontos vence</div>
+    </div>
+    <button class="cta" id="startBtn">Começar duelo</button>
+    <div style="opacity:.9;"><div class="winline green">▼ Mesa Verde</div></div>
+  </div>
+
+  <!-- game over -->
+  <div class="overlay hidden" id="overScreen">
+    <div class="rot" id="overTop"></div>
+    <div id="overWin" class="winline">🏆</div>
+    <div class="sub" id="overScoreLine"></div>
+    <button class="cta" id="againBtn">Revanche</button>
+    <div id="overBot"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const SUSHI=['🍣','🍤','🍥','🍙','🍡'];
+  const WIN=5;
+  const $=s=>document.querySelector(s);
+  const halfP1=$('#halfP1'), halfP2=$('#halfP2'),
+        sigP1=$('#sigP1'), sigP2=$('#sigP2'),
+        scoreP1=$('#scoreP1'), scoreP2=$('#scoreP2'),
+        pipsP1=$('#pipsP1'), pipsP2=$('#pipsP2'),
+        startScreen=$('#startScreen'), overScreen=$('#overScreen'),
+        overWin=$('#overWin'), overTop=$('#overTop'), overBot=$('#overBot'), overScoreLine=$('#overScoreLine');
+
+  let s1=0,s2=0,state='idle',token=0,running=false,windowTid=null;
+
+  let ac=null;
+  function beep(f,d,type,v){
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}}
+  const sGo=()=>beep(880,0.08,'triangle',0.07);
+  const sPoint=()=>{beep(660,0.09,'triangle',0.07);setTimeout(()=>beep(990,0.1,'triangle',0.06),60);};
+  const sFoul=()=>beep(160,0.22,'sawtooth',0.08);
+
+  const rand=a=>a[Math.floor(Math.random()*a.length)];
+  const ri=(a,b)=>a+Math.random()*(b-a);
+
+  function pips(){
+    [pipsP1,pipsP2].forEach((el,idx)=>{
+      el.innerHTML=''; const sc=idx===0?s1:s2;
+      for(let i=0;i<WIN;i++){const d=document.createElement('div');d.className='pip'+(i<sc?' on':'');el.appendChild(d);}
+    });
+  }
+  function setSignal(cls,big,txt){
+    [sigP1,sigP2].forEach(el=>{
+      el.className='signal '+cls;
+      el.innerHTML=(big?`<div class="big">${big}</div>`:'')+`<div class="txt${cls==='prep'?' dots':''}">${txt}</div>`;
+    });
+  }
+  function flash(on){ halfP1.classList.toggle('flash',on); halfP2.classList.toggle('flash',on); }
+
+  function startRound(){
+    if(!running) return;
+    state='prepare'; token++; const my=token;
+    flash(false);
+    setSignal('prep','','Prepare-se');
+    setTimeout(()=>{
+      if(my!==token||!running) return;
+      if(Math.random()<0.3){
+        state='nogo'; setSignal('nogo','🟢','NÃO!'); sFoul();
+        windowTid=setTimeout(()=>{ if(my===token){ setSignal('res','','Boa, seguraram!'); nextSoon(); } },1200);
+      }else{
+        state='go'; setSignal('go',rand(SUSHI),'TOQUE!'); flash(true); sGo();
+        windowTid=setTimeout(()=>{ if(my===token){ flash(false); setSignal('res','','Ninguém tocou…'); nextSoon(); } },1500);
+      }
+    }, ri(1000,2700));
+  }
+
+  function nextSoon(){ token++; setTimeout(startRound,900); }
+
+  function resolve(txt,cls){ clearTimeout(windowTid); token++; state='result'; flash(false); setSignal('res','',txt);
+    scoreP1.textContent=s1; scoreP2.textContent=s2; pips();
+    if(s1>=WIN||s2>=WIN){ setTimeout(endGame,700); } else { setTimeout(startRound,950); }
+  }
+
+  function point(to,reason){ if(to===1)s1++; else s2++; sPoint(); resolve(reason,'res'); }
+  function foul(by,reason){ if(by===1)s2++; else s1++; sFoul(); resolve(reason,'res'); }
+
+  function tap(player){
+    if(!running) return;
+    if(state==='go'){ point(player, (player===1?'Laranja':'Verde')+' foi mais rápido! +1'); }
+    else if(state==='nogo'){ foul(player, (player===1?'Laranja':'Verde')+' tocou no wasabi! ponto adversário'); }
+    else if(state==='prepare'){ foul(player, (player===1?'Laranja':'Verde')+' cedo demais! ponto adversário'); }
+  }
+  halfP1.addEventListener('pointerdown',e=>{e.preventDefault();tap(1);},{passive:false});
+  halfP2.addEventListener('pointerdown',e=>{e.preventDefault();tap(2);},{passive:false});
+
+  function endGame(){
+    running=false; state='idle';
+    const p1win=s1>s2;
+    halfP1.classList.toggle('win',p1win); halfP1.classList.toggle('lose',!p1win);
+    halfP2.classList.toggle('win',!p1win); halfP2.classList.toggle('lose',p1win);
+    const name=p1win?'Mesa Laranja':'Mesa Verde';
+    overWin.textContent='🏆 '+name+' venceu!';
+    overWin.className='winline '+(p1win?'orange':'green');
+    overTop.innerHTML=`<div class="winline ${p1win?'orange':'green'}">🏆 ${name} venceu!</div>`;
+    overBot.innerHTML=`<div class="sub" style="margin-top:10px;">${s1} × ${s2}</div>`;
+    overScoreLine.textContent=`${s1} × ${s2}`;
+    overScreen.classList.remove('hidden');
+  }
+
+  function play(){
+    s1=0;s2=0;running=true;
+    scoreP1.textContent='0';scoreP2.textContent='0';pips();
+    halfP1.className='half p1';halfP2.className='half p2';
+    startScreen.classList.add('hidden');overScreen.classList.add('hidden');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+    startRound();
+  }
+  $('#startBtn').addEventListener('click',play);
+  $('#againBtn').addEventListener('click',play);
+  pips();
+})();
+</script>
+</body>
+</html>

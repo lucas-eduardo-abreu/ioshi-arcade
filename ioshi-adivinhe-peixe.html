@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Adivinhe o Peixe</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#7fa64f; --gold:#f0b84a; --ink:#241c12; --bad:#e0512f; --ok:#7fa64f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;min-height:100dvh;}
+  #app{position:relative;min-height:100dvh;width:100vw;overflow-x:hidden;display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 2%, rgba(246,169,78,.16), transparent 44%),
+      radial-gradient(circle at 84% 96%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 60%);}
+  .noren{height:8px;background:var(--shu);}
+  .top{display:flex;align-items:center;gap:10px;padding:16px;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(15px,2.3vw,20px);}
+  .brand b{color:var(--shu-soft);} .brand span{opacity:.55;font-weight:700;font-size:.62em;letter-spacing:.12em;}
+  .hud-spacer{flex:1;}
+  .stat{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);border-radius:12px;padding:6px 12px;text-align:center;min-width:60px;line-height:1.05;}
+  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .stat .v{font-family:'Zen Maru Gothic';font-weight:700;font-size:18px;}
+  .stat.streak .v{color:var(--shu-soft);}
+
+  .wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 18px 30px;gap:18px;width:100%;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(30px,7.5vw,54px);line-height:.98;text-align:center;}
+  .big-title .jp{display:block;font-size:.32em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{opacity:.85;font-size:15px;line-height:1.5;max-width:460px;text-align:center;}
+
+  .intro{display:flex;flex-direction:column;align-items:center;gap:16px;}
+  .intro .e{font-size:clamp(38px,9vw,56px);}
+
+  .quiz{width:100%;max-width:560px;display:none;flex-direction:column;gap:16px;}
+  .quiz.on{display:flex;}
+  .timerbar{height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .timerbar i{display:block;height:100%;background:var(--shu-soft);transform-origin:left;border-radius:4px;}
+  .qnum{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;text-align:center;}
+  .question{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(20px,4.6vw,30px);text-align:center;line-height:1.2;min-height:2.4em;display:flex;align-items:center;justify-content:center;}
+  .opts{display:flex;flex-direction:column;gap:11px;}
+  .opt{font-weight:700;font-size:16px;text-align:left;background:rgba(0,0,0,.28);border:2px solid rgba(246,236,216,.16);
+    color:var(--kinari);border-radius:16px;padding:15px 18px;cursor:pointer;transition:transform .08s,border-color .12s,background .12s;}
+  .opt:hover{border-color:var(--shu);background:rgba(232,134,46,.1);}
+  .opt:active{transform:scale(.98);}
+  .opt.correct{border-color:var(--ok);background:rgba(127,166,79,.22);}
+  .opt.wrong{border-color:var(--bad);background:rgba(224,81,47,.2);}
+  .opt.dim{opacity:.5;} .opt:disabled{cursor:default;}
+  .opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .feedback{background:rgba(0,0,0,.3);border-radius:16px;padding:14px 16px;display:none;flex-direction:column;gap:10px;}
+  .feedback.on{display:flex;}
+  .feedback .verdict{font-family:'Zen Maru Gothic';font-weight:900;font-size:18px;}
+  .feedback .verdict.ok{color:var(--ok);} .feedback .verdict.no{color:var(--bad);}
+  .feedback .fact{font-size:14px;line-height:1.5;opacity:.95;}
+  .feedback .fact b{color:var(--shu-soft);}
+  .nextBtn{align-self:flex-end;font-family:'Zen Maru Gothic';font-weight:900;font-size:16px;background:var(--shu);color:#fff;border:none;
+    border-radius:14px;padding:12px 26px;cursor:pointer;box-shadow:0 5px 0 #b25e1c;transition:transform .08s,box-shadow .08s;}
+  .nextBtn:active{transform:translateY(3px);box-shadow:0 2px 0 #b25e1c;}
+
+  .result{display:none;flex-direction:column;align-items:center;gap:14px;text-align:center;}
+  .result.on{display:flex;}
+  .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(46px,12vw,88px);color:var(--gold);line-height:1;}
+  .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
+  .rank{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(22px,5vw,32px);color:var(--shu-soft);}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:18px;background:var(--shu);color:#fff;border:none;border-radius:16px;
+    padding:14px 30px;cursor:pointer;box-shadow:0 6px 0 #b25e1c,0 10px 18px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(3px);box-shadow:0 3px 0 #b25e1c;}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}.timerbar i{transition:none !important;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="noren"></div>
+  <div class="top">
+    <a href="index.html" aria-label="Voltar ao menu" style="background:rgba(0,0,0,.28);border:1px solid rgba(243,234,214,.14);color:inherit;border-radius:12px;width:42px;height:42px;font-size:19px;display:grid;place-items:center;text-decoration:none;flex-shrink:0;">←</a>
+    <div class="brand"><b>IOSHI</b> · ADIVINHE O PEIXE <span>魚当て</span></div>
+    <div class="hud-spacer"></div>
+    <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+    <div class="stat streak"><div class="k">Sequência</div><div class="v" id="streak">0</div></div>
+  </div>
+
+  <div class="wrap">
+    <div class="intro" id="intro">
+      <div class="e">🐟 🍣 🦐 🐙</div>
+      <div class="big-title"><span class="jp">魚当て · QUIZ</span>ADIVINHE O <em>PEIXE</em></div>
+      <p class="sub">10 perguntas sobre o mundo do sushi. Responda rápido pra ganhar bônus de velocidade e acerte em sequência pra multiplicar os pontos. No caminho, você ainda aprende uns truques do cardápio.</p>
+      <button class="cta" id="startBtn">Começar</button>
+    </div>
+
+    <div class="quiz" id="quiz">
+      <div class="timerbar"><i id="timer"></i></div>
+      <div class="qnum" id="qnum"></div>
+      <div class="question" id="question"></div>
+      <div class="opts" id="opts"></div>
+      <div class="feedback" id="feedback">
+        <div class="verdict" id="verdict"></div>
+        <div class="fact" id="fact"></div>
+        <button class="nextBtn" id="nextBtn">Próxima →</button>
+      </div>
+    </div>
+
+    <div class="result" id="result">
+      <div class="final-lbl">Sua pontuação</div>
+      <div class="final-score" id="finalScore">0</div>
+      <div class="rank" id="rank"></div>
+      <div class="sub" id="resultMsg"></div>
+      <button class="cta" id="againBtn">Jogar de novo</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+  const QTIME=12; // segundos por pergunta
+
+  const QUESTIONS=[
+    {q:'O que é o "gari" servido entre as peças?',
+     o:[['Gengibre em conserva',1],['Uma alga fina',0],['Molho apimentado',0],['Arroz temperado',0]],
+     fact:'O <b>gari</b> (gengibre em conserva) limpa o paladar entre peças diferentes — não é pra comer junto com o sushi!'},
+    {q:'Qual a diferença do sashimi pro niguiri?',
+     o:[['Sashimi não leva arroz',1],['Sashimi é sempre frito',0],['Sashimi é só atum',0],['Sashimi leva alga por fora',0]],
+     fact:'<b>Sashimi</b> são fatias de peixe puro, sem arroz. O <b>niguiri</b> é a fatia sobre um bolinho de arroz.'},
+    {q:'Qual alga envolve o temaki e os makis?',
+     o:[['Nori',1],['Wakame',0],['Kombu',0],['Hijiki',0]],
+     fact:'A <b>nori</b> é a alga prensada em folhas. Wakame e kombu aparecem mais em sopas e saladas.'},
+    {q:'"Unagi" é qual ingrediente?',
+     o:[['Enguia',1],['Polvo',0],['Camarão',0],['Lula',0]],
+     fact:'<b>Unagi</b> é enguia, normalmente grelhada com um molho adocicado (kabayaki). Vale provar no balcão!'},
+    {q:'O wasabi tradicional vem de uma...',
+     o:[['Raiz',1],['Alga',0],['Semente',0],['Flor',0]],
+     fact:'O <b>wasabi</b> de verdade é ralado da raiz da planta japonesa — bem diferente da pasta verde comum.'},
+    {q:'O "tamago" do sushi é feito de...',
+     o:[['Ovo (omelete adocicada)',1],['Tofu',0],['Peixe branco',0],['Arroz doce',0]],
+     fact:'<b>Tamago</b> é uma omelete levemente doce, dobrada em camadas. Um clássico pra quem não curte cru.'},
+    {q:'"Ikura" são ovas de qual peixe?',
+     o:[['Salmão',1],['Atum',0],['Bacalhau',0],['Sardinha',0]],
+     fact:'<b>Ikura</b> são as ovas alaranjadas e brilhantes de salmão — estouram na boca!'},
+    {q:'O que significa "itamae"?',
+     o:[['O chef de sushi',1],['O molho da casa',0],['A bandeja de servir',0],['O balcão',0]],
+     fact:'<b>Itamae</b> significa "diante da tábua" — é o mestre sushiman que prepara tudo no balcão.'},
+    {q:'O "hot roll" brasileiro é o sushi...',
+     o:[['Empanado e frito',1],['Servido no vapor',0],['Curado no sal',0],['Grelhado na brasa',0]],
+     fact:'<b>Hot roll</b> é empanado e frito, quentinho por dentro. Uma febre nas casas de sushi do Brasil.'},
+    {q:'"Hashi" são os...',
+     o:[['Palitinhos',1],['Pratinhos de molho',0],['Guardanapos quentes',0],['Copinhos de saquê',0]],
+     fact:'<b>Hashi</b> são os hashis (palitinhos). Dica: nunca finque-os em pé no arroz — é falta de etiqueta.'},
+  ];
+
+  const intro=$('#intro'), quiz=$('#quiz'), result=$('#result'),
+        timer=$('#timer'), qnum=$('#qnum'), question=$('#question'), opts=$('#opts'),
+        feedback=$('#feedback'), verdict=$('#verdict'), fact=$('#fact'),
+        scoreEl=$('#score'), streakEl=$('#streak'),
+        finalScore=$('#finalScore'), rank=$('#rank'), resultMsg=$('#resultMsg');
+
+  let order=[], idx=0, score=0, streak=0, correctCount=0, tId=null, tStart=0, answered=false;
+
+  let ac=null;
+  function beep(f,d,type,v){
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}}
+  const sOk=()=>{beep(660,0.09,'triangle',0.07);setTimeout(()=>beep(990,0.1,'triangle',0.06),60);};
+  const sNo=()=>beep(160,0.22,'sawtooth',0.07);
+
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+  function start(){
+    order=shuffle(QUESTIONS.map((_,i)=>i)); idx=0; score=0; streak=0; correctCount=0;
+    scoreEl.textContent='0'; streakEl.textContent='0';
+    intro.style.display='none'; result.classList.remove('on'); quiz.classList.add('on');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+    renderQ();
+  }
+
+  function renderQ(){
+    answered=false; feedback.classList.remove('on');
+    const item=QUESTIONS[order[idx]];
+    qnum.textContent=`Pergunta ${idx+1} de ${order.length}`;
+    question.textContent=item.q;
+    const os=shuffle(item.o.map(o=>({t:o[0],c:o[1]})));
+    opts.innerHTML='';
+    os.forEach(o=>{
+      const b=document.createElement('button'); b.className='opt'; b.type='button'; b.textContent=o.t;
+      b.addEventListener('click',()=>answer(b,o.c,os));
+      opts.appendChild(b);
+    });
+    // timer
+    timer.style.transition='none'; timer.style.transform='scaleX(1)'; void timer.offsetWidth;
+    tStart=Date.now();
+    timer.style.transition=`transform ${QTIME}s linear`; timer.style.transform='scaleX(0)';
+    clearTimeout(tId); tId=setTimeout(()=>{ if(!answered) timeout(os); }, QTIME*1000);
+  }
+
+  function lockOpts(os){
+    [...opts.children].forEach((b,i)=>{ b.disabled=true;
+      if(os[i].c) b.classList.add('correct');
+    });
+  }
+
+  function answer(btn,correct,os){
+    if(answered) return; answered=true; clearTimeout(tId);
+    const elapsed=(Date.now()-tStart)/1000;
+    lockOpts(os);
+    if(correct){
+      const speed=Math.max(0,1-elapsed/QTIME);
+      const mult=Math.min(1+Math.floor(streak/3),3);
+      const pts=Math.round((100+speed*100)*mult);
+      score+=pts; streak++; correctCount++;
+      scoreEl.textContent=score; streakEl.textContent=streak;
+      verdict.textContent=`Certo! +${pts}`+(mult>1?`  (x${mult})`:''); verdict.className='verdict ok'; sOk();
+    }else{
+      btn.classList.add('wrong'); streak=0; streakEl.textContent='0';
+      verdict.textContent='Ops, não é essa'; verdict.className='verdict no'; sNo();
+    }
+    fact.innerHTML=QUESTIONS[order[idx]].fact;
+    feedback.classList.add('on');
+  }
+
+  function timeout(os){
+    answered=true; lockOpts(os); streak=0; streakEl.textContent='0';
+    verdict.textContent='Tempo esgotado!'; verdict.className='verdict no'; sNo();
+    fact.innerHTML=QUESTIONS[order[idx]].fact; feedback.classList.add('on');
+  }
+
+  $('#nextBtn').addEventListener('click',()=>{
+    idx++;
+    if(idx<order.length){ renderQ(); } else { finish(); }
+  });
+
+  function finish(){
+    quiz.classList.remove('on'); result.classList.add('on');
+    finalScore.textContent=score;
+    let r,msg;
+    if(correctCount>=9){r='Mestre do balcão! 🍶';msg='Você manja de sushi como um itamae. Bora provar o Festival?';}
+    else if(correctCount>=6){r='Manja de sushi!';msg=`${correctCount}/10 certos. Tá quase itamae — o Festival te espera.`;}
+    else if(correctCount>=3){r='Aprendiz de itamae';msg=`${correctCount}/10. Cada peça é uma aula: peça e descubra ao vivo!`;}
+    else {r='Bora provar pra aprender 😄';msg='Nada como aprender comendo. Chama o garçom e explore o cardápio!';}
+    rank.textContent=r; resultMsg.textContent=msg;
+  }
+
+  $('#startBtn').addEventListener('click',start);
+  $('#againBtn').addEventListener('click',start);
+})();
+</script>
+</body>
+</html>

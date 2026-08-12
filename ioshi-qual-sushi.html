@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Qual sushi você é?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#8aa35a; --gold:#f0b84a; --ink:#241c12;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    -webkit-user-select:none;user-select:none;touch-action:manipulation;min-height:100dvh;}
+  #app{position:relative;min-height:100dvh;width:100vw;overflow-x:hidden;display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 2%, rgba(246,169,78,.16), transparent 44%),
+      radial-gradient(circle at 84% 96%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 60%);}
+  .noren{height:8px;background:var(--shu);}
+  .top{display:flex;align-items:center;gap:10px;padding:16px;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(15px,2.3vw,20px);}
+  .brand b{color:var(--shu-soft);} .brand span{opacity:.55;font-weight:700;font-size:.62em;letter-spacing:.12em;}
+
+  .wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 18px 30px;gap:20px;width:100%;}
+
+  /* intro */
+  .intro{text-align:center;display:flex;flex-direction:column;align-items:center;gap:16px;max-width:520px;}
+  .intro .emojis{font-size:clamp(34px,8vw,52px);letter-spacing:6px;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(32px,8vw,58px);line-height:.98;}
+  .big-title .jp{display:block;font-size:.32em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{opacity:.85;font-size:15px;line-height:1.5;max-width:460px;}
+
+  /* quiz */
+  .quiz{width:100%;max-width:560px;display:none;flex-direction:column;gap:18px;}
+  .quiz.on{display:flex;}
+  .prog{height:8px;border-radius:4px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .prog i{display:block;height:100%;background:var(--shu);transition:width .3s ease;border-radius:4px;}
+  .qnum{font-size:12px;letter-spacing:.16em;text-transform:uppercase;opacity:.6;text-align:center;}
+  .question{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(22px,5vw,32px);text-align:center;line-height:1.15;min-height:2.2em;display:flex;align-items:center;justify-content:center;}
+  .opts{display:flex;flex-direction:column;gap:12px;}
+  .opt{font-family:'M PLUS Rounded 1c';font-weight:700;font-size:16px;text-align:left;
+    background:rgba(0,0,0,.28);border:2px solid rgba(246,236,216,.16);color:var(--kinari);
+    border-radius:16px;padding:16px 20px;cursor:pointer;transition:transform .08s,border-color .12s,background .12s;
+    display:flex;align-items:center;gap:12px;}
+  .opt .e{font-size:24px;flex-shrink:0;}
+  .opt:hover{border-color:var(--shu);background:rgba(232,134,46,.12);}
+  .opt:active{transform:scale(.98);}
+  .opt:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  /* result card */
+  .result{width:100%;max-width:440px;display:none;flex-direction:column;gap:18px;align-items:center;}
+  .result.on{display:flex;}
+  .card{width:100%;border-radius:24px;overflow:hidden;position:relative;color:#fff;
+    box-shadow:0 18px 40px rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.14);}
+  .card .rays{position:absolute;inset:0;opacity:.22;
+    background:repeating-conic-gradient(from 0deg at 50% 30%, rgba(255,255,255,.5) 0deg 6deg, transparent 6deg 18deg);}
+  .card .body{position:relative;padding:26px 24px 20px;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;
+    background:linear-gradient(180deg, rgba(0,0,0,.12), rgba(0,0,0,.42));}
+  .card .kick{font-size:11px;letter-spacing:.24em;text-transform:uppercase;opacity:.85;}
+  .card .emo{font-size:76px;line-height:1;filter:drop-shadow(0 4px 8px rgba(0,0,0,.4));}
+  .card .name{font-family:'Zen Maru Gothic';font-weight:900;font-size:30px;line-height:1;}
+  .card .tag{font-style:italic;opacity:.95;font-size:15px;}
+  .card .desc{font-size:14px;line-height:1.5;opacity:.96;}
+  .card .traits{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px;}
+  .card .chip{background:rgba(255,255,255,.22);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:700;}
+  .card .pair{margin-top:8px;font-size:13px;background:rgba(0,0,0,.28);border-radius:14px;padding:10px 14px;}
+  .card .pair b{color:#fff;}
+  .card .foot{margin-top:12px;display:flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:13px;
+    border-top:1px solid rgba(255,255,255,.2);padding-top:12px;width:100%;}
+  .card .foot .h{font-family:'Zen Maru Gothic';}
+
+  .actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:18px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:14px 28px;cursor:pointer;box-shadow:0 6px 0 #b25e1c,0 10px 18px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(3px);box-shadow:0 3px 0 #b25e1c,0 6px 12px rgba(0,0,0,.4);}
+  .cta.ghost{background:none;border:2px solid rgba(246,236,216,.3);box-shadow:none;color:var(--kinari);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .sharehint{font-size:13px;opacity:.7;text-align:center;}
+
+  .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:rgba(0,0,0,.85);border:1px solid rgba(246,236,216,.2);color:var(--kinari);
+    padding:12px 18px;border-radius:14px;font-size:14px;transition:.25s;pointer-events:none;z-index:20;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="noren"></div>
+  <div class="top">
+    <a href="index.html" aria-label="Voltar ao menu" style="background:rgba(0,0,0,.28);border:1px solid rgba(243,234,214,.14);color:inherit;border-radius:12px;width:42px;height:42px;font-size:19px;display:grid;place-items:center;text-decoration:none;flex-shrink:0;">←</a><div class="brand"><b>IOSHI</b> · QUAL SUSHI VOCÊ É? <span>あなたは</span></div></div>
+
+  <div class="wrap">
+    <!-- intro -->
+    <div class="intro" id="intro">
+      <div class="emojis">🍣 🔥 🌯 🥑 🐟 🚤</div>
+      <div class="big-title"><span class="jp">診断 · TESTE</span>QUAL SUSHI <em>VOCÊ É?</em></div>
+      <p class="sub">Seis perguntas rápidas e a gente revela qual peça combina com a sua vibe. No fim, tire um print e marque o <b>@ioshi.sushi</b> nos stories!</p>
+      <button class="cta" id="startBtn">Descobrir</button>
+    </div>
+
+    <!-- quiz -->
+    <div class="quiz" id="quiz">
+      <div class="prog"><i id="prog"></i></div>
+      <div class="qnum" id="qnum"></div>
+      <div class="question" id="question"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+
+    <!-- result -->
+    <div class="result" id="result">
+      <div class="card" id="card"></div>
+      <div class="actions">
+        <button class="cta" id="shareBtn">Compartilhar</button>
+        <button class="cta ghost" id="againBtn">Refazer</button>
+      </div>
+      <div class="sharehint">Print + stories marcando <b>@ioshi.sushi</b> 🍣</div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  const $=s=>document.querySelector(s);
+
+  const TYPES={
+    niguiri:{emo:'🍣',name:'Niguiri de Salmão',tag:'O clássico que nunca falha.',
+      desc:'Você valoriza o que é bom de verdade, sem firula. Leal, presente e caloroso — as pessoas sabem que podem contar com você.',
+      traits:['Leal','Caloroso','Direto'],pair:'o <b>Festival de Sushi</b> — o clássico à vontade.',
+      grad:'linear-gradient(160deg,#ef8a4e,#c9531f)'},
+    hot:{emo:'🔥',name:'Hot Filadélfia',tag:'Intenso por fora, cremoso por dentro.',
+      desc:'Energia que contagia. Você topa o novo, curte emoção e deixa todo mundo mais animado por perto — puro sabor quente.',
+      traits:['Intenso','Empolgado','Ousado'],pair:'os <b>hot rolls</b> da casa.',
+      grad:'linear-gradient(160deg,#f0673a,#a8281c)'},
+    temaki:{emo:'🌯',name:'Temaki',tag:'Direto ao ponto.',
+      desc:'Prático e mão na massa. Você resolve, não enrola e vai no essencial — do jeito que dá certo e rápido.',
+      traits:['Prático','Objetivo','Ágil'],pair:'um <b>temaki caprichado</b> no balcão.',
+      grad:'linear-gradient(160deg,#e0a24a,#a86a1e)'},
+    california:{emo:'🥑',name:'Califórnia',tag:'Equilíbrio que agrada geral.',
+      desc:'Você é a ponte do grupo: versátil, sociável e sempre no meio-termo certo. Onde você chega, o clima flui.',
+      traits:['Equilibrado','Sociável','Versátil'],pair:'o <b>combinado executivo</b>.',
+      grad:'linear-gradient(160deg,#8aa35a,#4f6a2e)'},
+    sashimi:{emo:'🐟',name:'Sashimi',tag:'Menos é mais.',
+      desc:'Elegância na simplicidade. Você aprecia o essencial, tem um olhar refinado e prefere qualidade a quantidade.',
+      traits:['Refinado','Sereno','Autêntico'],pair:'o <b>sashimi fresco do dia</b>.',
+      grad:'linear-gradient(160deg,#6a8fb0,#2f4a63)'},
+    combinado:{emo:'🚤',name:'Barca Combinada',tag:'Quanto mais, melhor — e dividido.',
+      desc:'Alma de anfitrião. Você gosta de variedade, fartura e de reunir a galera. Sua mesa é sempre a mais cheia e feliz.',
+      traits:['Generoso','Anfitrião','Festeiro'],pair:'a <b>barca</b> pra mesa toda.',
+      grad:'linear-gradient(160deg,#ef8a4e,#7a5514)'},
+  };
+
+  const Q=[
+    {q:'Como você encara um rodízio?',o:[
+      {e:'🍣',t:'Vou direto no que amo e repito à vontade',k:'niguiri'},
+      {e:'🚤',t:'Provo um pouco de tudo, quero variedade',k:'combinado'},
+      {e:'🔥',t:'Escolho as coisas mais diferentes e ousadas',k:'hot'},
+      {e:'🐟',t:'Peço poucas peças, mas as melhores',k:'sashimi'}]},
+    {q:'No grupo de amigos, você é...',o:[
+      {e:'🥑',t:'Quem mantém todo mundo junto',k:'california'},
+      {e:'🚤',t:'O anfitrião que chama geral pra mesa',k:'combinado'},
+      {e:'🌯',t:'O direto que resolve rápido',k:'temaki'},
+      {e:'🐟',t:'Quem curte papo fundo com poucos',k:'sashimi'}]},
+    {q:'Seu fim de semana ideal?',o:[
+      {e:'🍣',t:'Clássico: conforto e o de sempre bom',k:'niguiri'},
+      {e:'🔥',t:'Algo novo e intenso, uma aventura',k:'hot'},
+      {e:'🌯',t:'Prático: resolver e relaxar',k:'temaki'},
+      {e:'🐟',t:'Poucos, bem escolhidos, com calma',k:'sashimi'}]},
+    {q:'Seu prato tem que ter...',o:[
+      {e:'🔥',t:'Aquele sabor caloroso e quentinho',k:'hot'},
+      {e:'🥑',t:'Equilíbrio, um pouco de cada',k:'california'},
+      {e:'🐟',t:'O essencial, puro e fresco',k:'sashimi'},
+      {e:'🚤',t:'Fartura pra dividir',k:'combinado'}]},
+    {q:'Como você toma decisões?',o:[
+      {e:'🍣',t:'No que já sei que funciona',k:'niguiri'},
+      {e:'🔥',t:'No impulso, seguindo a emoção',k:'hot'},
+      {e:'🌯',t:'Rápido e prático',k:'temaki'},
+      {e:'🥑',t:'Pensando em todos ao redor',k:'california'}]},
+    {q:'Sua vibe em uma palavra?',o:[
+      {e:'🍣',t:'Confiável',k:'niguiri'},
+      {e:'🔥',t:'Intenso',k:'hot'},
+      {e:'🌯',t:'Prático',k:'temaki'},
+      {e:'🥑',t:'Equilibrado',k:'california'},
+      {e:'🐟',t:'Refinado',k:'sashimi'},
+      {e:'🚤',t:'Generoso',k:'combinado'}]},
+  ];
+
+  const intro=$('#intro'), quiz=$('#quiz'), result=$('#result'),
+        prog=$('#prog'), qnum=$('#qnum'), question=$('#question'), opts=$('#opts'), card=$('#card'), toast=$('#toast');
+
+  let idx=0, scores={}, lastK=null;
+
+  function showToast(msg){ toast.textContent=msg; toast.classList.add('show'); setTimeout(()=>toast.classList.remove('show'),2600); }
+
+  function start(){
+    idx=0; scores={}; lastK=null;
+    Object.keys(TYPES).forEach(k=>scores[k]=0);
+    intro.style.display='none'; result.classList.remove('on'); quiz.classList.add('on');
+    render();
+  }
+  function render(){
+    const item=Q[idx];
+    prog.style.width=((idx)/Q.length*100)+'%';
+    qnum.textContent=`Pergunta ${idx+1} de ${Q.length}`;
+    question.textContent=item.q;
+    opts.innerHTML='';
+    item.o.forEach(o=>{
+      const b=document.createElement('button'); b.className='opt'; b.type='button';
+      b.innerHTML=`<span class="e">${o.e}</span><span>${o.t}</span>`;
+      b.addEventListener('click',()=>choose(o.k));
+      opts.appendChild(b);
+    });
+  }
+  function choose(k){
+    scores[k]=(scores[k]||0)+1; lastK=k; idx++;
+    if(idx<Q.length){ render(); } else { finish(); }
+  }
+  function finish(){
+    prog.style.width='100%';
+    let max=-1, winners=[];
+    for(const k in scores){ if(scores[k]>max){max=scores[k];winners=[k];} else if(scores[k]===max){winners.push(k);} }
+    const k = winners.includes(lastK)?lastK:winners[0];
+    const t=TYPES[k];
+    card.style.background=t.grad;
+    card.innerHTML=`<div class="rays"></div><div class="body">
+      <div class="kick">você é um</div>
+      <div class="emo">${t.emo}</div>
+      <div class="name">${t.name}</div>
+      <div class="tag">"${t.tag}"</div>
+      <div class="desc">${t.desc}</div>
+      <div class="traits">${t.traits.map(x=>`<span class="chip">${x}</span>`).join('')}</div>
+      <div class="pair">🍽️ Combina com você: ${t.pair}</div>
+      <div class="foot"><span class="h">IOSHI</span> · <span>@ioshi.sushi</span></div>
+    </div>`;
+    quiz.classList.remove('on'); result.classList.add('on');
+    card._share = `Sou um ${t.name} ${t.emo} no Ioshi! Descubra qual sushi você é 🍣 @ioshi.sushi`;
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  $('#startBtn').addEventListener('click',start);
+  $('#againBtn').addEventListener('click',start);
+  $('#shareBtn').addEventListener('click',async()=>{
+    const text=card._share||'Descubra qual sushi você é no Ioshi! @ioshi.sushi';
+    try{
+      if(navigator.share){ await navigator.share({title:'Qual sushi você é?',text}); }
+      else if(navigator.clipboard){ await navigator.clipboard.writeText(text); showToast('Texto copiado! Cole nos stories 📋'); }
+      else { showToast('Tire um print e marque @ioshi.sushi 📸'); }
+    }catch(e){ showToast('Tire um print e marque @ioshi.sushi 📸'); }
+  });
+})();
+</script>
+</body>
+</html>

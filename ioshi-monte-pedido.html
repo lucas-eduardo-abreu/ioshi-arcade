@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Monte o Pedido</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --ai:#2c2016; --ai-deep:#241a12;
+    --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#8aa35a; --gold:#f0b84a; --ink:#241c12; --bad:#e0512f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  #app{position:relative;min-height:100dvh;width:100vw;overflow:hidden;display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 4%, rgba(246,169,78,.16), transparent 42%),
+      radial-gradient(circle at 84% 92%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 66%);}
+  .noren{position:absolute;top:0;left:0;right:0;height:8px;background:var(--shu);z-index:6;}
+
+  .hud{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;z-index:5;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(15px,2.3vw,22px);white-space:nowrap;}
+  .brand b{color:var(--shu-soft);}
+  .brand span{opacity:.55;font-weight:700;font-size:.6em;letter-spacing:.12em;}
+  .hud-spacer{flex:1;}
+  .stat{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);border-radius:12px;
+    padding:6px 12px;text-align:center;min-width:60px;line-height:1.05;}
+  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .stat .v{font-family:'Zen Maru Gothic';font-weight:700;font-size:19px;}
+  .lives{font-size:18px;letter-spacing:2px;}
+  .iconbtn{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);color:var(--kinari);
+    border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;display:grid;place-items:center;}
+  .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:8px 16px 16px;}
+  .phase{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(18px,3.4vw,26px);text-align:center;min-height:1.2em;}
+  .phase.peek{color:var(--shu-soft);} .phase.build{color:var(--gold);}
+  .peekbar{width:min(80vw,420px);height:6px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;}
+  .peekbar i{display:block;height:100%;width:100%;background:var(--shu-soft);transform-origin:left;}
+
+  /* geta board */
+  .board{display:flex;gap:clamp(8px,1.6vw,14px);flex-wrap:wrap;justify-content:center;
+    background:linear-gradient(180deg,#3a2a1c,#251a11);padding:16px clamp(14px,3vw,26px);border-radius:20px;
+    border:2px solid #4a3624;box-shadow:inset 0 6px 12px rgba(0,0,0,.5),0 10px 20px rgba(0,0,0,.35);}
+  .slot{width:clamp(52px,13vw,74px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;position:relative;
+    background:radial-gradient(circle at 40% 34%,#fffdf7,#eee5cf 62%,#d8cbb0);border:3px solid #e6dcc4;
+    box-shadow:0 5px 8px rgba(0,0,0,.35);cursor:default;transition:transform .1s,border-color .15s,box-shadow .15s;}
+  .slot.empty{background:rgba(255,255,255,.05);border:2px dashed rgba(246,236,216,.3);box-shadow:none;}
+  .slot .food{font-size:clamp(26px,6.4vw,40px);line-height:1;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2));}
+  .slot.hole{cursor:pointer;} .slot.hole:active{transform:scale(.94);}
+  .slot.ok{border-color:var(--matcha);box-shadow:0 0 0 3px rgba(138,163,90,.5),0 5px 8px rgba(0,0,0,.3);}
+  .slot.bad{border-color:var(--bad);box-shadow:0 0 0 3px rgba(224,81,47,.45),0 5px 8px rgba(0,0,0,.3);}
+  .slot .want{position:absolute;bottom:-8px;right:-6px;font-size:18px;background:var(--sumi);border-radius:50%;
+    width:26px;height:26px;display:grid;place-items:center;border:2px solid var(--bad);}
+  @keyframes place{0%{transform:scale(.5);opacity:0;}60%{transform:scale(1.12);}100%{transform:scale(1);opacity:1;}}
+  .slot .food.pop{animation:place .22s ease;}
+
+  /* tray */
+  .tray{display:flex;gap:clamp(8px,1.6vw,14px);flex-wrap:wrap;justify-content:center;transition:opacity .2s;}
+  .tray.off{opacity:.28;pointer-events:none;}
+  .ing{width:clamp(58px,14vw,80px);aspect-ratio:1;border-radius:18px;display:grid;place-items:center;cursor:pointer;
+    background:linear-gradient(180deg,#332618,#241a10);border:2px solid #4a3624;box-shadow:0 5px 0 #1a120b,0 8px 12px rgba(0,0,0,.35);
+    transition:transform .08s,box-shadow .08s;}
+  .ing:active{transform:translateY(4px);box-shadow:0 1px 0 #1a120b,0 4px 8px rgba(0,0,0,.35);}
+  .ing:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .ing .food{font-size:clamp(28px,6.6vw,42px);line-height:1;}
+
+  .controls{display:flex;gap:12px;}
+  .btn{font-family:'Zen Maru Gothic';font-weight:700;font-size:16px;border-radius:14px;padding:12px 24px;cursor:pointer;
+    border:2px solid rgba(246,236,216,.25);background:rgba(0,0,0,.25);color:var(--kinari);transition:transform .08s,opacity .12s;}
+  .btn:active{transform:translateY(2px);}
+  .btn.primary{background:var(--shu);border:none;color:#fff;box-shadow:0 6px 0 #b25e1c;}
+  .btn.primary:active{box-shadow:0 2px 0 #b25e1c;}
+  .btn:disabled{opacity:.4;pointer-events:none;}
+  .btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:16px;padding:24px;background:rgba(20,14,10,.9);backdrop-filter:blur(3px);}
+  .overlay.hidden{display:none;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(32px,7.5vw,58px);line-height:.95;}
+  .big-title .jp{display:block;font-size:.34em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{max-width:430px;opacity:.85;font-size:15px;line-height:1.5;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #b25e1c,0 12px 20px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #b25e1c,0 8px 14px rgba(0,0,0,.4);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(46px,12vw,92px);color:var(--gold);line-height:1;}
+  .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
+  .newbest{color:var(--shu-soft);font-weight:800;font-size:15px;visibility:hidden;}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;}.peekbar i{transition:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <a href="index.html" class="iconbtn" aria-label="Voltar ao menu" style="text-decoration:none;position:fixed;top:16px;left:16px;z-index:9999;">←</a>
+  <div class="noren"></div>
+  <div class="hud">
+    <span style="width:42px;height:42px;flex-shrink:0;" aria-hidden="true"></span>
+    <div class="brand"><b>IOSHI</b> MONTE O PEDIDO <span>板前</span></div>
+    <div class="hud-spacer"></div>
+    <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+    <div class="stat"><div class="k">Rodada</div><div class="v" id="round">1</div></div>
+    <div class="stat"><div class="k">Vidas</div><div class="v lives" id="lives">❤❤❤</div></div>
+    <button class="iconbtn" id="mute" aria-label="Som">🔊</button>
+  </div>
+
+  <div class="stage">
+    <div class="phase" id="phase"></div>
+    <div class="peekbar" id="peekbar" style="visibility:hidden;"><i id="peekfill"></i></div>
+    <div class="board" id="board"></div>
+    <div class="tray off" id="tray"></div>
+    <div class="controls">
+      <button class="btn" id="clearBtn" disabled>Apagar</button>
+      <button class="btn primary" id="serveBtn" disabled>Servir</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="startScreen">
+    <div class="big-title"><span class="jp">板前 · ITAMAE</span>MONTE O <em>PEDIDO</em></div>
+    <p class="sub">O pedido pisca por alguns segundos, memorize a <b>ordem</b> das peças. Depois remonte tocando nos ingredientes na sequência certa. Acertou o pedido inteiro? Bônus e sequência sobem. Errou? Perde uma vida.</p>
+    <button class="cta" id="startBtn">Começar</button>
+    <p class="sub" style="font-size:12px;opacity:.55;">3 vidas • cada rodada fica maior e mais rápida</p>
+  </div>
+
+  <div class="overlay hidden" id="overScreen">
+    <div class="final-lbl">Cozinha fechada</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="newbest" id="newBest">✦ Novo recorde! ✦</div>
+    <div class="sub" id="overMsg"></div>
+    <button class="cta" id="againBtn">Jogar de novo</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const ING = ['🍣','🍤','🍥','🍙','🍡','🥟'];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = s => document.querySelector(s);
+  const board=$('#board'), tray=$('#tray'), phase=$('#phase'), peekbar=$('#peekbar'), peekfill=$('#peekfill'),
+        scoreEl=$('#score'), roundEl=$('#round'), livesEl=$('#lives'),
+        clearBtn=$('#clearBtn'), serveBtn=$('#serveBtn'), muteBtn=$('#mute'),
+        startScreen=$('#startScreen'), overScreen=$('#overScreen'),
+        finalScore=$('#finalScore'), newBest=$('#newBest'), overMsg=$('#overMsg');
+
+  let round=1, score=0, lives=3, streak=0, order=[], placed=[], accepting=false, muted=false, best=0;
+
+  let ac=null;
+  function beep(f,d,type,v){ if(muted)return;
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}}
+  const sTap=()=>beep(500,0.05,'sine',0.045);
+  const sGood=()=>{beep(660,0.09,'triangle',0.07);setTimeout(()=>beep(880,0.1,'triangle',0.06),60);};
+  const sBad=()=>beep(180,0.22,'sawtooth',0.08);
+  const sWin=()=>{[523,659,784].forEach((f,i)=>setTimeout(()=>beep(f,0.14,'triangle',0.07),i*100));};
+  muteBtn.addEventListener('click',()=>{muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';});
+
+  const rand=a=>a[Math.floor(Math.random()*a.length)];
+  function orderLen(r){ return r<=2?3 : r<=4?4 : r<=6?5 : 6; }
+  function peekMs(r){ return Math.max(1400, 2600 - r*160); }
+  function palette(r){ return r<=3?ING.slice(0,4) : r<=6?ING.slice(0,5) : ING.slice(0,6); }
+
+  function buildTray(){
+    tray.innerHTML='';
+    palette(round).forEach(emo=>{
+      const b=document.createElement('button'); b.className='ing'; b.type='button';
+      b.innerHTML=`<span class="food">${emo}</span>`;
+      b.addEventListener('click',()=>placeNext(emo));
+      tray.appendChild(b);
+    });
+  }
+  function renderBoard(state){
+    // state: 'peek' shows order, 'build' shows placed with holes
+    board.innerHTML='';
+    order.forEach((emo,i)=>{
+      const s=document.createElement('div');
+      if(state==='peek'){ s.className='slot'; s.innerHTML=`<span class="food">${emo}</span>`; }
+      else{
+        const p=placed[i];
+        if(p){ s.className='slot hole'; s.innerHTML=`<span class="food">${p}</span>`;
+               s.addEventListener('click',()=>removeAt(i)); }
+        else { s.className='slot empty'; }
+      }
+      s.dataset.i=i; board.appendChild(s);
+    });
+  }
+
+  function startRound(){
+    order=[]; const L=orderLen(round), pal=palette(round);
+    for(let i=0;i<L;i++) order.push(rand(pal));
+    placed=new Array(L).fill(null);
+    roundEl.textContent=round;
+    accepting=false; tray.classList.add('off');
+    clearBtn.disabled=true; serveBtn.disabled=true;
+    buildTray(); renderBoard('peek');
+    phase.textContent='Memorize o pedido!'; phase.className='phase peek';
+    // peek countdown bar
+    const ms=peekMs(round);
+    peekbar.style.visibility='visible';
+    peekfill.style.transition='none'; peekfill.style.transform='scaleX(1)';
+    void peekfill.offsetWidth;
+    if(!reduceMotion){ peekfill.style.transition=`transform ${ms}ms linear`; peekfill.style.transform='scaleX(0)'; }
+    setTimeout(beginBuild, ms);
+  }
+
+  function beginBuild(){
+    peekbar.style.visibility='hidden';
+    renderBoard('build');
+    phase.textContent='Monte o pedido'; phase.className='phase build';
+    tray.classList.remove('off'); accepting=true;
+    clearBtn.disabled=false;
+  }
+
+  function firstEmpty(){ return placed.indexOf(null); }
+  function placeNext(emo){
+    if(!accepting) return;
+    const idx=firstEmpty(); if(idx<0) return;
+    placed[idx]=emo; sTap(); renderBoard('build');
+    const el=board.querySelector(`.slot[data-i="${idx}"] .food`); if(el) el.classList.add('pop');
+    serveBtn.disabled = firstEmpty()>=0;   // habilita quando cheio
+  }
+  function removeAt(i){ if(!accepting)return; placed[i]=null; renderBoard('build'); serveBtn.disabled=true; }
+  clearBtn.addEventListener('click',()=>{
+    if(!accepting)return;
+    for(let i=placed.length-1;i>=0;i--){ if(placed[i]){ placed[i]=null; break; } }
+    renderBoard('build'); serveBtn.disabled=true;
+  });
+
+  function serve(){
+    if(!accepting || firstEmpty()>=0) return;
+    accepting=false; tray.classList.add('off'); clearBtn.disabled=true; serveBtn.disabled=true;
+    let correct=0;
+    order.forEach((emo,i)=>{
+      const s=board.querySelector(`.slot[data-i="${i}"]`);
+      if(placed[i]===emo){ s.classList.add('ok'); correct++; }
+      else { s.classList.add('bad'); const w=document.createElement('span'); w.className='want'; w.textContent=emo; s.appendChild(w); }
+    });
+    const perfect = correct===order.length;
+    let gained = correct*20;
+    if(perfect){ const bonus=Math.round(50*(1+streak*0.25)); gained+=bonus; streak++; sWin();
+      phase.textContent=`Pedido perfeito! +${gained}`; phase.className='phase build'; }
+    else{ streak=0; lives--; sBad(); livesEl.textContent='❤'.repeat(Math.max(0,lives))||'—';
+      phase.textContent=`${correct}/${order.length} certos  ·  −1 vida`; phase.className='phase peek'; }
+    score+=gained; scoreEl.textContent=score;
+
+    setTimeout(()=>{ if(lives<=0){ endGame(); } else { round++; startRound(); } }, 1500);
+  }
+  serveBtn.addEventListener('click',serve);
+
+  function endGame(){
+    finalScore.textContent=score;
+    const isBest=score>best; if(isBest){best=score;}
+    newBest.style.visibility=isBest?'visible':'hidden';
+    overMsg.textContent = round>=8?'Itamae de primeira! 🍶' : round>=5?'Boa memória de comanda!' : 'Treina que a mão pega o ritmo.';
+    overScreen.classList.remove('hidden');
+  }
+
+  function play(){
+    round=1;score=0;lives=3;streak=0;
+    scoreEl.textContent='0';livesEl.textContent='❤❤❤';
+    startScreen.classList.add('hidden');overScreen.classList.add('hidden');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+    startRound();
+  }
+  $('#startBtn').addEventListener('click',play);
+  $('#againBtn').addEventListener('click',play);
+})();
+</script>
+</body>
+</html>

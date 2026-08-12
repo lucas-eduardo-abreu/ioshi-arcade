@@ -3,20 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Ioshi · Festival Rush</title>
+<title>Ioshi · Arcade de Mesa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    /* Identidade Ioshi: madeira quente + laranja tangerina + pôr do sol do templo */
-    --sumi:#1c1410;      /* madeira escura (fundo) */
-    --ai:#2c2016;        /* painel madeira */
+    --sumi:#1c1410;
+    --ai:#2c2016;
     --ai-deep:#241a12;
-    --kinari:#f6ecd8;    /* creme */
-    --shu:#e8862e;       /* laranja tangerina (estofado Ioshi) */
-    --shu-soft:#f6a94e;  /* laranja claro (brilho do pôr do sol) */
-    --matcha:#8aa35a;    /* verde musgo (as bolinhas de musgo do salão) */
+    --kinari:#f6ecd8;
+    --shu:#e8862e;
+    --shu-soft:#f6a94e;
+    --matcha:#8aa35a;
     --gold:#f0b84a;
     --ink:#241c12;
   }
@@ -26,636 +25,201 @@
     font-family:'M PLUS Rounded 1c',system-ui,sans-serif;
     background:var(--sumi);
     color:var(--kinari);
-    overflow:hidden;
     -webkit-user-select:none;user-select:none;
     touch-action:manipulation;
   }
-  .hidden{display:none !important;}
   #app{
-    position:relative;height:100dvh;width:100vw;overflow:hidden;
+    position:relative;min-height:100dvh;width:100vw;
     background:
-      radial-gradient(circle at 50% 6%, rgba(246,169,78,.18), transparent 40%),
-      radial-gradient(circle at 16% 14%, rgba(232,134,46,.12), transparent 44%),
-      radial-gradient(circle at 84% 90%, rgba(138,163,90,.09), transparent 46%),
+      radial-gradient(circle at 50% 0%, rgba(246,169,78,.16), transparent 42%),
+      radial-gradient(circle at 12% 18%, rgba(232,134,46,.10), transparent 44%),
+      radial-gradient(circle at 88% 84%, rgba(138,163,90,.08), transparent 46%),
       repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
       linear-gradient(180deg, #34251a, var(--sumi) 68%);
+    padding-bottom:36px;
   }
 
-  /* ---- noren header ---- */
   .noren{
-    position:absolute;top:0;left:0;right:0;height:8px;
+    position:sticky;top:0;left:0;right:0;height:8px;
     background:var(--shu);
     box-shadow:0 2px 0 rgba(0,0,0,.25);z-index:6;
   }
 
-  /* ---- HUD ---- */
-  .hud{
-    position:absolute;top:0;left:0;right:0;z-index:5;
-    display:flex;align-items:center;gap:10px;
-    padding:16px 16px 10px;
+  header{
+    padding:34px 24px 22px;text-align:center;
   }
-  .brand{
+  .kicker{
+    font-size:12px;letter-spacing:.32em;text-transform:uppercase;
+    color:var(--shu-soft);font-weight:700;
+  }
+  .kicker .jp{font-family:'Zen Maru Gothic',sans-serif;letter-spacing:.2em;margin-right:6px;}
+  h1{
     font-family:'Zen Maru Gothic',sans-serif;font-weight:900;
-    font-size:clamp(16px,2.4vw,22px);letter-spacing:.02em;
-    color:var(--kinari);white-space:nowrap;
+    font-size:clamp(30px,6.5vw,54px);line-height:1;margin:8px 0 10px;
   }
-  .brand b{color:var(--shu-soft);}
-  .hud-spacer{flex:1;}
-  .stat{
-    background:rgba(0,0,0,.28);border:1px solid rgba(243,234,214,.14);
-    border-radius:12px;padding:6px 12px;text-align:center;min-width:62px;
-    line-height:1.05;
-  }
-  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
-  .stat .v{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:19px;}
-  .stat.time .v{color:var(--gold);}
-  .stat.time.low .v{color:var(--shu-soft);}
-  .stat.p2 .v{color:var(--matcha);}
-  .iconbtn{
-    background:rgba(0,0,0,.28);border:1px solid rgba(243,234,214,.14);
-    color:var(--kinari);border-radius:12px;width:42px;height:42px;
-    font-size:19px;cursor:pointer;display:grid;place-items:center;
-  }
-  .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  h1 em{color:var(--shu-soft);font-style:normal;}
+  header p{max-width:520px;margin:0 auto;opacity:.8;font-size:14.5px;line-height:1.55;}
 
-  /* ---- daily special badge ---- */
-  .daily-wrap{
-    position:absolute;top:78px;left:0;right:0;z-index:4;
-    display:flex;justify-content:center;pointer-events:none;
+  .grid{
+    max-width:1180px;margin:26px auto 0;padding:0 20px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;
   }
-  .daily{
-    display:flex;align-items:center;gap:8px;
-    background:rgba(0,0,0,.32);border:1px solid rgba(240,184,74,.4);
-    border-radius:999px;padding:5px 16px 5px 10px;
-  }
-  .daily .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;}
-  .daily .food{font-size:19px;line-height:1;}
-  .daily .nm{font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:14px;}
 
-  /* ---- lanes (1 or 2 esteiras) ---- */
-  .lanes{
-    position:absolute;left:0;right:0;top:120px;bottom:3%;z-index:2;
-    display:flex;flex-direction:column;
+  .card{
+    position:relative;display:flex;flex-direction:column;gap:10px;
+    background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(0,0,0,.14));
+    border:1px solid rgba(246,236,216,.14);border-radius:20px;
+    padding:20px 20px 18px;text-decoration:none;color:inherit;
+    box-shadow:0 10px 24px rgba(0,0,0,.28);
+    transition:transform .12s ease, border-color .12s ease, box-shadow .12s ease;
   }
-  .lane{
-    position:relative;flex:1;min-height:0;
-    display:flex;flex-direction:column;justify-content:space-between;
-  }
-  .lanes.duo .lane[data-player="1"]{border-bottom:2px dashed rgba(246,236,216,.16);padding-bottom:4px;}
-  .lanes.duo .lane[data-player="2"]{padding-top:4px;}
-  .lane[data-player="2"]{display:none;}
-  .lanes.duo .lane[data-player="2"]{display:flex;}
+  .card:active{transform:translateY(3px) scale(.99);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+  .card:hover{border-color:rgba(240,184,74,.45);}
+  .card:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
 
-  .lane-tag{
-    display:none;position:absolute;top:2px;left:6px;z-index:4;
-    font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
-    background:rgba(0,0,0,.3);border-radius:999px;padding:3px 10px;opacity:.85;
-    color:var(--gold);
+  .card .top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+  .card .emoji{
+    font-size:34px;line-height:1;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,.4));
   }
-  .lane[data-player="2"] .lane-tag{color:var(--matcha);}
-  .lanes.duo .lane-tag{display:block;}
+  .card .jp-tag{
+    font-family:'Zen Maru Gothic',sans-serif;font-size:11px;letter-spacing:.1em;
+    color:var(--shu-soft);opacity:.75;white-space:nowrap;margin-top:4px;
+  }
+  .card .players{
+    display:inline-flex;align-items:center;gap:4px;
+    font-size:10px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;
+    background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.16);
+    border-radius:999px;padding:3px 9px;opacity:.85;white-space:nowrap;
+  }
 
-  /* ---- order ticket ---- */
-  .ticket-wrap{
-    position:relative;z-index:4;
-    display:flex;justify-content:center;pointer-events:none;
+  .card h2{
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:900;
+    font-size:19px;line-height:1.15;
   }
-  .ticket{
-    background:var(--kinari);color:var(--ink);
-    border-radius:6px;padding:10px 20px 12px;position:relative;
-    box-shadow:0 10px 24px rgba(0,0,0,.4);
-    display:flex;align-items:center;gap:14px;
-    transform-origin:top center;
-    border-top:3px solid var(--shu);
-    max-width:88vw;
-  }
-  .ticket::before,.ticket::after{
-    content:"";position:absolute;bottom:-7px;width:14px;height:14px;
-    background:var(--sumi);border-radius:50%;
-  }
-  .ticket::before{left:16px;} .ticket::after{right:16px;}
-  .ticket .lbl{
-    font-size:10px;letter-spacing:.18em;text-transform:uppercase;
-    color:var(--shu);font-weight:700;
-  }
-  .ticket .food{font-size:34px;line-height:1;filter:saturate(1.05);}
-  .ticket .nm{font-family:'Zen Maru Gothic',sans-serif;font-weight:900;font-size:22px;}
-  .ticket .stamp{
-    position:absolute;right:-10px;top:-14px;width:44px;height:44px;border-radius:50%;
-    border:2px solid var(--shu);color:var(--shu);
-    display:grid;place-items:center;font-family:'Zen Maru Gothic';font-weight:900;
-    font-size:18px;transform:rotate(-12deg);background:rgba(224,71,47,.06);
-  }
-  @keyframes ticketflip{
-    0%{transform:rotateX(90deg) scale(.9);opacity:0;}
-    60%{transform:rotateX(-8deg) scale(1.02);}
-    100%{transform:rotateX(0) scale(1);opacity:1;}
-  }
-  .ticket.flip{animation:ticketflip .4s cubic-bezier(.2,.8,.25,1);}
+  .card p{font-size:13px;line-height:1.5;opacity:.78;flex:1;}
 
-  /* ---- belt ---- */
-  .belt{
-    position:relative;flex-shrink:0;width:100%;height:130px;z-index:2;
-    overflow:hidden;
-    background:
-      linear-gradient(180deg,#2a2018,#1a130e 55%,#120c08);
-    border-top:3px solid var(--shu);border-bottom:3px solid #3a2a1c;
-    box-shadow:inset 0 12px 20px rgba(0,0,0,.5), 0 -6px 18px rgba(0,0,0,.35);
+  .card .play{
+    display:inline-flex;align-items:center;gap:6px;align-self:flex-start;
+    font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:13px;
+    color:var(--sumi);background:var(--shu);
+    border-radius:999px;padding:8px 16px;margin-top:2px;
+    box-shadow:0 5px 0 #a8321f;
   }
-  .belt::before{ /* moving lacquer slats */
-    content:"";position:absolute;inset:0;
-    background:repeating-linear-gradient(90deg,
-      rgba(255,255,255,.045) 0 2px, transparent 2px 46px);
-    animation:slats 1.1s linear infinite;
-  }
-  .belt::after{ /* sheen */
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(255,225,180,.10), transparent 30%);
-    pointer-events:none;
-  }
-  @keyframes slats{to{background-position:-46px 0;}}
-  .belt.paused::before{animation-play-state:paused;}
+  .card:active .play{box-shadow:0 2px 0 #a8321f;transform:translateY(1px);}
 
-  .plate{
-    position:absolute;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;
-    will-change:transform;cursor:pointer;touch-action:none;
-    display:grid;place-items:center;
+  footer{
+    text-align:center;padding:28px 20px 8px;font-size:12px;opacity:.5;
   }
-  .disc{
-    width:88px;height:88px;border-radius:50%;
-    background:radial-gradient(circle at 38% 32%, #ffffff, #eef1f4 55%, #cfd6de);
-    box-shadow:0 8px 12px rgba(0,0,0,.45), inset 0 -4px 8px rgba(0,0,0,.12);
-    display:grid;place-items:center;position:relative;
-    border:3px solid #d9e0e8;
-  }
-  .disc::after{content:"";position:absolute;inset:9px;border-radius:50%;
-    border:2px solid rgba(32,48,77,.22);}
-  .plate .food{font-size:44px;line-height:1;pointer-events:none;
-    filter:drop-shadow(0 2px 1px rgba(0,0,0,.25));}
-  /* wasabi tile */
-  .plate.wasabi .disc{background:radial-gradient(circle at 40% 34%,#dfe8d6,#c3d2b4 60%,#a9bb96);border-color:#b6c79f;}
-  .wmound{width:46px;height:34px;border-radius:50% 50% 46% 46%;
-    background:radial-gradient(circle at 40% 30%, #9ec273, #6f9b48 70%, #567a35);
-    box-shadow:inset 0 -4px 4px rgba(0,0,0,.2);position:relative;}
-  .wmound::after{content:"";position:absolute;inset:0;border-radius:inherit;
-    background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.4), transparent 40%);}
-  /* daily-special tile accent */
-  .plate.daily .disc{border-color:var(--gold);box-shadow:0 8px 12px rgba(0,0,0,.45), 0 0 0 3px rgba(240,184,74,.35);}
-
-  @keyframes grab{
-    0%{transform:translate(var(--gx),var(--gy)) scale(1);}
-    100%{transform:translate(var(--gx),calc(var(--gy) - 120px)) scale(1.25);opacity:0;}
-  }
-  .plate.grabbed{animation:grab .32s ease-out forwards;pointer-events:none;}
-  @keyframes wrongwig{0%,100%{transform:translate(var(--gx),var(--gy));}
-    25%{transform:translate(calc(var(--gx) - 6px),var(--gy)) rotate(-8deg);}
-    75%{transform:translate(calc(var(--gx) + 6px),var(--gy)) rotate(8deg);}}
-  .plate.wrong{animation:wrongwig .3s ease;pointer-events:none;}
-
-  /* floating score */
-  .float{position:absolute;z-index:3;font-family:'Zen Maru Gothic';font-weight:900;
-    font-size:26px;color:var(--gold);pointer-events:none;text-shadow:0 2px 6px rgba(0,0,0,.6);}
-  .float.bad{color:var(--shu-soft);}
-  .float.star{color:var(--gold);text-shadow:0 0 10px rgba(240,184,74,.7),0 2px 6px rgba(0,0,0,.6);}
-  @keyframes floatup{0%{transform:translateY(0) scale(.8);opacity:0;}
-    20%{opacity:1;transform:translateY(-8px) scale(1);}
-    100%{transform:translateY(-64px) scale(1);opacity:0;}}
-  .float{animation:floatup .8s ease-out forwards;}
-
-  /* combo badge */
-  .combo{
-    position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:4;
-    font-family:'Zen Maru Gothic';font-weight:900;color:var(--shu-soft);
-    font-size:clamp(20px,3.6vw,30px);opacity:0;pointer-events:none;
-    text-shadow:0 2px 10px rgba(0,0,0,.5);
-  }
-  .combo.show{animation:pop .5s ease;}
-  @keyframes pop{0%{opacity:0;transform:translateX(-50%) scale(.6);}
-    40%{opacity:1;transform:translateX(-50%) scale(1.1);}
-    100%{opacity:0;transform:translateX(-50%) scale(1);}}
-
-  /* ---- overlays ---- */
-  .overlay{
-    position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
-    align-items:center;justify-content:center;text-align:center;gap:16px;
-    padding:24px;background:rgba(15,20,30,.86);backdrop-filter:blur(3px);
-  }
-  .overlay.hidden{display:none;}
-  .big-title{
-    font-family:'Zen Maru Gothic';font-weight:900;
-    font-size:clamp(38px,9vw,72px);line-height:.95;letter-spacing:.01em;
-  }
-  .big-title .jp{display:block;font-size:.42em;color:var(--shu-soft);letter-spacing:.3em;margin-bottom:6px;}
-  .big-title em{color:var(--shu-soft);font-style:normal;}
-  .sub{max-width:440px;opacity:.85;font-size:15px;line-height:1.5;}
-  .how{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;margin:4px 0 2px;}
-  .how div{display:flex;align-items:center;gap:8px;font-size:14px;opacity:.9;}
-  .how .e{font-size:24px;}
-  .mode-select{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
-  .cta{
-    font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;
-    background:var(--shu);color:#fff;border:none;border-radius:16px;
-    padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #a8321f, 0 12px 20px rgba(0,0,0,.4);
-    transition:transform .08s, box-shadow .08s;
-  }
-  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #a8321f, 0 8px 14px rgba(0,0,0,.4);}
-  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
-  .cta.secondary{
-    background:transparent;color:var(--kinari);
-    border:2px solid var(--shu-soft);box-shadow:none;padding:14px 38px;
-  }
-  .cta.secondary:active{transform:translateY(2px);}
-  .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(48px,12vw,96px);color:var(--gold);line-height:1;}
-  .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
-  .newbest{color:var(--shu-soft);font-weight:800;font-size:16px;}
-  .duo-scores{display:flex;align-items:center;gap:20px;}
-  .duo-score{display:flex;flex-direction:column;align-items:center;gap:2px;}
-  .duo-name{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.7;}
-  .duo-val{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(34px,8vw,56px);color:var(--gold);line-height:1;}
-  .duo-score.p2 .duo-val{color:var(--matcha);}
-  .duo-vs{font-family:'Zen Maru Gothic';font-weight:900;font-size:20px;opacity:.5;}
-
-  #app.shake{animation:shk .3s;}
-  @keyframes shk{0%,100%{transform:translate(0,0);}20%{transform:translate(-8px,3px);}
-    50%{transform:translate(7px,-3px);}80%{transform:translate(-4px,2px);}}
-  .redflash{position:absolute;inset:0;background:var(--shu);opacity:0;z-index:9;pointer-events:none;}
-  .redflash.on{animation:rf .3s ease;}
-  @keyframes rf{0%{opacity:.35;}100%{opacity:0;}}
 
   @media (prefers-reduced-motion: reduce){
-    *{animation-duration:.01ms !important;}
-    .belt::before{animation:none;}
+    *{transition:none !important;}
   }
 </style>
 </head>
 <body>
 <div id="app">
   <div class="noren"></div>
-  <div class="redflash" id="redflash"></div>
 
-  <div class="hud">
-    <div class="brand"><b>IOSHI</b> FESTIVAL RUSH</div>
-    <div class="hud-spacer"></div>
-    <div class="stat" id="statA"><div class="k" id="statALabel">Pontos</div><div class="v" id="statAValue">0</div></div>
-    <div class="stat" id="statB"><div class="k" id="statBLabel">Recorde</div><div class="v" id="statBValue">0</div></div>
-    <div class="stat time" id="timeStat"><div class="k">Tempo</div><div class="v" id="time">60</div></div>
-    <button class="iconbtn" id="mute" aria-label="Ativar ou desativar som">🔊</button>
-  </div>
+  <header>
+    <div class="kicker"><span class="jp">祭</span>IOSHI SUSHI</div>
+    <h1>Arcade <em>de Mesa</em></h1>
+    <p>Enquanto o pedido não chega, escolha um jogo. Toque, jogue e devolva o tablet pra mesa quando o sushi chegar.</p>
+  </header>
 
-  <div class="daily-wrap">
-    <div class="daily">
-      <span class="lbl">★ Prato do dia</span>
-      <span class="food" id="dailyFood">🍣</span>
-      <span class="nm" id="dailyName">—</span>
-    </div>
-  </div>
-
-  <div class="lanes" id="lanes">
-    <div class="lane" data-player="1">
-      <span class="lane-tag">Jogador 1</span>
-      <div class="ticket-wrap">
-        <div class="ticket" id="ticketP1">
-          <div>
-            <div class="lbl">Pedido da mesa</div>
-            <div class="nm" id="ticketNameP1">—</div>
-          </div>
-          <div class="food" id="ticketFoodP1">🍣</div>
-          <div class="stamp">祭</div>
-        </div>
+  <div class="grid">
+    <a class="card" href="ioshi-festival-rush.html">
+      <div class="top-row"><span class="emoji">🍣</span><span class="players">1–2 jogadores</span></div>
+      <div>
+        <div class="jp-tag">寿司祭</div>
+        <h2>Festival Rush</h2>
       </div>
-      <div class="combo" id="comboP1"></div>
-      <div class="belt" id="beltP1"></div>
-    </div>
-    <div class="lane" data-player="2">
-      <span class="lane-tag">Jogador 2</span>
-      <div class="ticket-wrap">
-        <div class="ticket" id="ticketP2">
-          <div>
-            <div class="lbl">Pedido da mesa</div>
-            <div class="nm" id="ticketNameP2">—</div>
-          </div>
-          <div class="food" id="ticketFoodP2">🍣</div>
-          <div class="stamp">祭</div>
-        </div>
+      <p>Os pratos correm na esteira — toque só no pedido da mesa antes que passe. Esteira dividida no modo dupla.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-corte-perfeito.html">
+      <div class="top-row"><span class="emoji">🔪</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">板前の技</div>
+        <h2>Corte Perfeito</h2>
       </div>
-      <div class="combo" id="comboP2"></div>
-      <div class="belt" id="beltP2"></div>
-    </div>
+      <p>A faca varre a tábua. Toque no instante exato em que ela cruza a zona dourada para o corte perfeito.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-memoria.html">
+      <div class="top-row"><span class="emoji">🧠</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">神経衰弱</div>
+        <h2>Memória</h2>
+      </div>
+      <p>Vire duas cartas por vez e encontre os pares de sushi. Escolha o tamanho do desafio.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-monte-pedido.html">
+      <div class="top-row"><span class="emoji">📝</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">板前</div>
+        <h2>Monte o Pedido</h2>
+      </div>
+      <p>Memorize a ordem do pedido e remonte tocando nos ingredientes na sequência certa antes que a vida acabe.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-pega-gato.html">
+      <div class="top-row"><span class="emoji">🐱</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">泥棒猫</div>
+        <h2>Pega o Gato</h2>
+      </div>
+      <p>Os gatos sobem pra roubar o sushi do balcão. Toque neles pra barrar antes que levem a peça.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-adivinhe-peixe.html">
+      <div class="top-row"><span class="emoji">🐟</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">魚当て</div>
+        <h2>Adivinhe o Peixe</h2>
+      </div>
+      <p>10 perguntas sobre o mundo do sushi. Responda rápido pra ganhar bônus e acerte em sequência pra multiplicar.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-duelo.html">
+      <div class="top-row"><span class="emoji">⚔️</span><span class="players">2 jogadores</span></div>
+      <div>
+        <div class="jp-tag">対決</div>
+        <h2>Duelo</h2>
+      </div>
+      <p>Tablet no meio da mesa, um de cada lado. Sushi apareceu, toque rápido — wasabi apareceu, não toque.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-gashapon.html">
+      <div class="top-row"><span class="emoji">🎰</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">ガシャポン</div>
+        <h2>Gashapon da Sorte</h2>
+      </div>
+      <p>Gire a manivela da máquina de cápsulas e descubra o mimo ou a sorte do dia.</p>
+      <span class="play">Jogar →</span>
+    </a>
+
+    <a class="card" href="ioshi-qual-sushi.html">
+      <div class="top-row"><span class="emoji">🍱</span><span class="players">1 jogador</span></div>
+      <div>
+        <div class="jp-tag">あなたは</div>
+        <h2>Qual Sushi Você É?</h2>
+      </div>
+      <p>Seis perguntas rápidas revelam qual peça combina com a sua vibe. Compartilhável nos stories.</p>
+      <span class="play">Jogar →</span>
+    </a>
   </div>
 
-  <!-- start -->
-  <div class="overlay" id="startScreen">
-    <div class="big-title"><span class="jp">寿司祭 · FESTIVAL DE SUSHI</span>IOSHI <em>RUSH</em></div>
-    <p class="sub">Enquanto a mesa não chega, encare o festival! Os pratos passam na esteira — toque só no que está no <b>pedido da mesa</b> lá em cima. Encadeie acertos pro combo subir e fuja do wasabi!</p>
-    <div class="how">
-      <div><span class="e">🍣</span> toque no pedido</div>
-      <div><span class="e">★</span> prato do dia rende mais</div>
-      <div><span class="e">🟢</span> nunca no wasabi</div>
-      <div><span class="e">🔥</span> combo = mais pontos</div>
-    </div>
-    <div class="mode-select">
-      <button class="cta" id="mode1Btn">1 Jogador</button>
-      <button class="cta secondary" id="mode2Btn">2 Jogadores</button>
-    </div>
-    <p class="sub" style="font-size:12px;opacity:.55;">60 segundos de festival • quanto mais rápido, mais vale</p>
-  </div>
-
-  <!-- game over -->
-  <div class="overlay hidden" id="overScreen">
-    <div class="final-lbl" id="overLabel">Fim do rush</div>
-    <div class="final-score" id="finalScore">0</div>
-    <div class="duo-scores hidden" id="duoScores">
-      <div class="duo-score p1"><span class="duo-name">Jogador 1</span><span class="duo-val" id="duoP1">0</span></div>
-      <div class="duo-vs">×</div>
-      <div class="duo-score p2"><span class="duo-name">Jogador 2</span><span class="duo-val" id="duoP2">0</span></div>
-    </div>
-    <div class="newbest" id="newBest" style="visibility:hidden;">✦ Novo recorde! ✦</div>
-    <div class="sub" id="overMsg"></div>
-    <button class="cta" id="againBtn">Jogar de novo</button>
-  </div>
+  <footer>Ioshi Sushi · feito pra passar o tempo entre um pedido e outro</footer>
 </div>
-
-<script>
-(function(){
-  "use strict";
-  const SUSHI = [
-    {key:'nigiri',  emoji:'🍣', name:'Niguiri'},
-    {key:'ebi',     emoji:'🍤', name:'Ebi'},
-    {key:'naruto',  emoji:'🍥', name:'Narutomaki'},
-    {key:'onigiri', emoji:'🍙', name:'Onigiri'},
-    {key:'dango',   emoji:'🍡', name:'Dango'},
-  ];
-  const GAME_TIME = 60;
-  const BEST_KEY = 'ioshiFestivalRushBest';
-  const DAILY_BONUS = 0.5; // +50% em cima do prato do dia
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  const $ = s => document.querySelector(s);
-  const app=$('#app'), lanesEl=$('#lanes'),
-        statALabel=$('#statALabel'), statAValue=$('#statAValue'),
-        statBEl=$('#statB'), statBLabel=$('#statBLabel'), statBValue=$('#statBValue'),
-        timeEl=$('#time'), timeStat=$('#timeStat'),
-        dailyFoodEl=$('#dailyFood'), dailyNameEl=$('#dailyName'),
-        startScreen=$('#startScreen'), overScreen=$('#overScreen'),
-        overLabel=$('#overLabel'), finalScore=$('#finalScore'),
-        duoScores=$('#duoScores'), duoP1=$('#duoP1'), duoP2=$('#duoP2'),
-        newBest=$('#newBest'), overMsg=$('#overMsg'),
-        redflash=$('#redflash'), muteBtn=$('#mute');
-
-  let running=false, best=Number(localStorage.getItem(BEST_KEY))||0,
-      timeLeft=GAME_TIME, elapsed=0, lastTs=0, muted=false, mode=1, dailyDish=null;
-
-  statBValue.textContent = best;
-
-  // ---- audio ----
-  let ac=null;
-  function beep(freq,dur,type,vol){
-    if(muted) return;
-    try{
-      ac=ac||new (window.AudioContext||window.webkitAudioContext)();
-      const o=ac.createOscillator(), g=ac.createGain();
-      o.type=type||'sine'; o.frequency.value=freq;
-      g.gain.value=vol||0.06;
-      o.connect(g); g.connect(ac.destination);
-      const t=ac.currentTime;
-      g.gain.setValueAtTime(g.gain.value,t);
-      g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-      o.start(t); o.stop(t+dur);
-    }catch(e){}
-  }
-  const sGood=()=>{beep(660,0.09,'triangle',0.08);setTimeout(()=>beep(880,0.09,'triangle',0.07),55);};
-  const sStar=()=>{beep(660,0.09,'triangle',0.08);setTimeout(()=>beep(880,0.09,'triangle',0.08),55);setTimeout(()=>beep(1180,0.12,'triangle',0.07),110);};
-  const sBad =()=>beep(150,0.22,'sawtooth',0.09);
-  const sMiss=()=>beep(300,0.1,'sine',0.05);
-
-  muteBtn.addEventListener('click',()=>{muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';});
-
-  const lerp=(a,b,t)=>a+(b-a)*Math.max(0,Math.min(1,t));
-  const rand=arr=>arr[Math.floor(Math.random()*arr.length)];
-
-  function difficulty(){
-    const t=elapsed/GAME_TIME;
-    return {
-      speed: lerp(130,270,t),            // px per second
-      spawn: lerp(1050,560,t),           // ms between plates
-      wasabi: lerp(0.09,0.20,t),
-    };
-  }
-
-  // ---- lane (uma esteira / um jogador) ----
-  function makeLane(n){
-    return {
-      n,
-      ticket:$('#ticketP'+n), ticketName:$('#ticketNameP'+n), ticketFood:$('#ticketFoodP'+n),
-      belt:$('#beltP'+n), comboEl:$('#comboP'+n),
-      target:null, hitsOnTarget:0, targetTimer:0,
-      plates:[], lastSpawn:0, idc:0,
-      combo:0, score:0,
-    };
-  }
-  const laneP1=makeLane(1), laneP2=makeLane(2);
-  let lanes=[laneP1];
-
-  function newTarget(lane){
-    let n; do{ n=rand(SUSHI); }while(lane.target && n.key===lane.target.key);
-    lane.target=n; lane.hitsOnTarget=0; lane.targetTimer=0;
-    lane.ticketName.textContent=n.name; lane.ticketFood.textContent=n.emoji;
-    lane.ticket.classList.remove('flip'); void lane.ticket.offsetWidth; lane.ticket.classList.add('flip');
-  }
-
-  function spawnPlate(lane,d){
-    let type;
-    if(Math.random()<d.wasabi){ type='wasabi'; }
-    else if(Math.random()<0.46){ type=lane.target; }   // bias toward current order
-    else { type=rand(SUSHI); }
-
-    const p=document.createElement('div');
-    const isDaily = type!=='wasabi' && dailyDish && type.key===dailyDish.key;
-    p.className='plate'+(type==='wasabi'?' wasabi':'')+(isDaily?' daily':'');
-    p.dataset.id=(++lane.idc);
-    const disc=document.createElement('div'); disc.className='disc';
-    if(type==='wasabi'){
-      const m=document.createElement('div'); m.className='wmound'; disc.appendChild(m);
-    }else{
-      const f=document.createElement('div'); f.className='food'; f.textContent=type.emoji; disc.appendChild(f);
-    }
-    p.appendChild(disc);
-    const obj={id:lane.idc, el:p, x:-60, type, hit:false, bob:Math.random()*Math.PI*2};
-    p.style.transform=`translate(${obj.x}px,0)`;
-    p.addEventListener('pointerdown', ev=>{ev.preventDefault();onTap(lane,obj);},{passive:false});
-    lane.belt.appendChild(p);
-    lane.plates.push(obj);
-  }
-
-  function floatText(lane,x,y,txt,bad,star){
-    const f=document.createElement('div'); f.className='float'+(bad?' bad':'')+(star?' star':'');
-    f.textContent=txt; f.style.left=x+'px'; f.style.top=y+'px';
-    lane.belt.appendChild(f); setTimeout(()=>f.remove(),800);
-  }
-
-  function showCombo(lane){
-    if(lane.combo<2) return;
-    lane.comboEl.textContent='🔥 Combo x'+lane.combo;
-    lane.comboEl.classList.remove('show'); void lane.comboEl.offsetWidth; lane.comboEl.classList.add('show');
-  }
-
-  function updateHud(){
-    if(mode===1){
-      statAValue.textContent = laneP1.score;
-      statBValue.textContent = best;
-    } else {
-      statAValue.textContent = laneP1.score;
-      statBValue.textContent = laneP2.score;
-    }
-  }
-
-  function onTap(lane,obj){
-    if(!running || obj.hit) return;
-    const bx=obj.x, by=lane.belt.clientHeight/2-48;
-    obj.el.style.setProperty('--gx',bx+'px');
-    obj.el.style.setProperty('--gy','0px');
-
-    if(obj.type==='wasabi'){
-      obj.hit=true; lane.combo=0;
-      timeLeft=Math.max(0,timeLeft-3);
-      obj.el.classList.add('wrong');
-      floatText(lane, bx, by, '-3s', true);
-      sBad(); flashRed(); shake();
-      cleanup(lane,obj,300);
-    } else if(lane.target && obj.type.key===lane.target.key){
-      obj.hit=true; lane.combo++; lane.hitsOnTarget++;
-      const mult=Math.min(1+Math.floor(lane.combo/4),5);
-      const base=10*mult;
-      const isDaily = dailyDish && lane.target.key===dailyDish.key;
-      const pts = isDaily ? Math.round(base*(1+DAILY_BONUS)) : base;
-      lane.score+=pts; updateHud();
-      obj.el.classList.add('grabbed');
-      floatText(lane, bx, by, '+'+pts+(isDaily?' ★':''), false, isDaily);
-      showCombo(lane); isDaily?sStar():sGood();
-      cleanup(lane,obj,320);
-      if(lane.hitsOnTarget>=6) newTarget(lane);
-    } else {
-      obj.hit=true; lane.combo=0;
-      timeLeft=Math.max(0,timeLeft-1);
-      obj.el.classList.add('wrong');
-      floatText(lane, bx, by, 'errou!', true);
-      sMiss();
-      cleanup(lane,obj,300);
-    }
-  }
-
-  function cleanup(lane,obj,delay){
-    setTimeout(()=>{
-      obj.el.remove();
-      lane.plates=lane.plates.filter(p=>p!==obj);
-    },delay);
-    obj.dead=true;
-  }
-
-  function flashRed(){ redflash.classList.remove('on'); void redflash.offsetWidth; redflash.classList.add('on'); }
-  function shake(){ if(reduceMotion) return; app.classList.remove('shake'); void app.offsetWidth; app.classList.add('shake'); }
-
-  function tick(ts){
-    if(!running) return;
-    if(!lastTs) lastTs=ts;
-    const dt=Math.min(0.05,(ts-lastTs)/1000); lastTs=ts;
-    elapsed+=dt; timeLeft-=dt;
-    const d=difficulty();
-
-    for(const lane of lanes){
-      lane.targetTimer+=dt;
-      if(ts-lane.lastSpawn > d.spawn){ lane.lastSpawn=ts; spawnPlate(lane,d); }
-      if(lane.targetTimer>9) newTarget(lane);
-
-      const w=lane.belt.clientWidth;
-      for(const p of lane.plates){
-        if(p.dead) continue;
-        p.x += d.speed*dt;
-        p.bob += dt*3;
-        const y=reduceMotion?0:Math.sin(p.bob)*4;
-        p.el.style.transform=`translate(${p.x}px,${y}px)`;
-        if(p.x>w+60){
-          if(!p.hit && lane.target && p.type!=='wasabi' && p.type.key===lane.target.key){ lane.combo=0; }
-          p.dead=true; p.el.remove();
-        }
-      }
-      lane.plates=lane.plates.filter(p=>!p.dead);
-    }
-
-    const tl=Math.max(0,Math.ceil(timeLeft));
-    timeEl.textContent=tl;
-    timeStat.classList.toggle('low',tl<=10);
-
-    if(timeLeft<=0){ endGame(); return; }
-    requestAnimationFrame(tick);
-  }
-
-  function resetLane(lane){
-    lane.score=0; lane.combo=0; lane.target=null; lane.hitsOnTarget=0; lane.targetTimer=0;
-    lane.lastSpawn=0; lane.idc=0;
-    lane.plates.forEach(p=>p.el.remove()); lane.plates=[];
-  }
-
-  function startGame(selectedMode){
-    mode = selectedMode || mode;
-    running=true; timeLeft=GAME_TIME; elapsed=0; lastTs=0;
-
-    dailyDish = rand(SUSHI);
-    dailyFoodEl.textContent=dailyDish.emoji; dailyNameEl.textContent=dailyDish.name;
-
-    lanes = mode===2 ? [laneP1,laneP2] : [laneP1];
-    lanesEl.classList.toggle('duo', mode===2);
-    resetLane(laneP1); resetLane(laneP2);
-    lanes.forEach(newTarget);
-
-    statALabel.textContent = mode===2 ? 'Jogador 1' : 'Pontos';
-    statBLabel.textContent = mode===2 ? 'Jogador 2' : 'Recorde';
-    statBEl.classList.toggle('p2', mode===2);
-    updateHud();
-    timeEl.textContent=GAME_TIME; timeStat.classList.remove('low');
-    startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
-    laneP1.belt.classList.remove('paused'); laneP2.belt.classList.remove('paused');
-    // unlock audio on gesture
-    try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended')ac.resume(); }catch(e){}
-    requestAnimationFrame(tick);
-  }
-
-  function endGame(){
-    running=false; laneP1.belt.classList.add('paused'); laneP2.belt.classList.add('paused');
-
-    const topScore = mode===2 ? Math.max(laneP1.score,laneP2.score) : laneP1.score;
-    const isBest = topScore>best;
-    if(isBest){ best=topScore; localStorage.setItem(BEST_KEY,String(best)); }
-    newBest.style.visibility=isBest?'visible':'hidden';
-
-    if(mode===2){
-      finalScore.classList.add('hidden');
-      duoScores.classList.remove('hidden');
-      duoP1.textContent=laneP1.score; duoP2.textContent=laneP2.score;
-      overLabel.textContent = laneP1.score===laneP2.score ? 'Empate!'
-                             : (laneP1.score>laneP2.score ? 'Jogador 1 venceu!' : 'Jogador 2 venceu!');
-      overMsg.textContent = 'Fim do festival — quem serviu mais rápido?';
-    } else {
-      duoScores.classList.add('hidden');
-      finalScore.classList.remove('hidden');
-      finalScore.textContent=laneP1.score;
-      overLabel.textContent='Fim do rush';
-      overMsg.textContent = topScore>=400 ? 'Itamae do Ioshi! 🍶'
-                          : topScore>=200 ? 'Bom ritmo no festival!'
-                          : 'Pede mais uma rodada que a próxima rende.';
-    }
-
-    lanes.forEach(l=>{ l.plates.forEach(p=>p.el.remove()); l.plates=[]; });
-    overScreen.classList.remove('hidden');
-  }
-
-  $('#mode1Btn').addEventListener('click',()=>startGame(1));
-  $('#mode2Btn').addEventListener('click',()=>startGame(2));
-  $('#againBtn').addEventListener('click',()=>startGame(mode));
-  document.addEventListener('keydown',e=>{
-    if((e.code==='Space'||e.code==='Enter') && !running){ e.preventDefault(); startGame(mode); }
-  });
-})();
-</script>
 </body>
 </html>

@@ -1,14 +1,28 @@
-# 🍣 Ioshi · Festival Rush
+# 🍣 Ioshi · Arcade de Mesa
 
-Jogo casual de esteira (*kaiten*) pensado pra rodar em **tablets de mesa de sushi bar** — aquele intervalo entre pedidos em que a galera fica parada esperando a esteira chegar. Identidade visual do [Ioshi Sushi](https://www.ioshisushi.com.br/).
+Coleção de mini-jogos casuais pensada pra rodar em **tablets de mesa de sushi bar** — aquele intervalo entre pedidos em que a galera fica parada esperando a esteira chegar. Identidade visual do [Ioshi Sushi](https://www.ioshisushi.com.br/).
 
-Arquivo único, zero dependências (só duas fontes do Google Fonts), *touch-first*. Roda numa PWA/navegador travado sem backend.
+Cada jogo é um arquivo HTML único, zero dependências (só duas fontes do Google Fonts), *touch-first*, sem backend. `index.html` é o hub que lista todos os jogos; cada um tem um botão **← Menu** pra voltar.
 
-## Como jogar
+## Jogos
+
+| | Jogo | Arquivo | Jogadores |
+|---|------|---------|:---:|
+| 🍣 | **Festival Rush** — pratos correm na esteira, toque só no pedido da mesa antes que passe | `ioshi-festival-rush.html` | 1–2 |
+| 🔪 | **Corte Perfeito** — toque no instante exato em que a faca cruza a zona dourada | `ioshi-corte-perfeito.html` | 1 |
+| 🧠 | **Memória** — vire as cartas e encontre os pares de sushi | `ioshi-memoria.html` | 1 |
+| 📝 | **Monte o Pedido** — memorize a ordem e remonte tocando nos ingredientes certos | `ioshi-monte-pedido.html` | 1 |
+| 🐱 | **Pega o Gato** — toque nos gatos antes que roubem o sushi do balcão | `ioshi-pega-gato.html` | 1 |
+| 🐟 | **Adivinhe o Peixe** — quiz de 10 perguntas sobre o mundo do sushi | `ioshi-adivinhe-peixe.html` | 1 |
+| ⚔️ | **Duelo** — tablet no meio da mesa, reação mais rápida vence | `ioshi-duelo.html` | 2 |
+| 🎰 | **Gashapon da Sorte** — gire a cápsula e descubra o mimo do dia | `ioshi-gashapon.html` | 1 |
+| 🍱 | **Qual Sushi Você É?** — quiz de personalidade, compartilhável | `ioshi-qual-sushi.html` | 1 |
+
+### Festival Rush em detalhe
 
 Escolha **1 Jogador** ou **2 Jogadores** (esteira dividida ao meio, cada um com seu próprio pedido e placar). O "pedido da mesa" aparece no topo de cada esteira. Os pratos rolam — toque **só** nos que batem com o pedido. Acertos em sequência sobem o combo (até x5), o pedido troca sozinho, e o **wasabi é armadilha** (−3s, afeta os dois jogadores no modo dupla). São 60 segundos e a esteira acelera com o tempo.
 
-Todo jogo sorteia um **prato do dia** (★): acertar o pedido quando ele coincidir com o prato do dia rende +50% de pontos.
+Todo jogo sorteia um **prato do dia** (★): acertar o pedido quando ele coincidir com o prato do dia rende +50% de pontos. O recorde persiste entre sessões via `localStorage`.
 
 | Ação | Efeito |
 |------|--------|
@@ -20,7 +34,7 @@ Todo jogo sorteia um **prato do dia** (★): acertar o pedido quando ele coincid
 
 ## Rodar localmente
 
-É um HTML estático — basta abrir `index.html` no navegador. Ou servir:
+É tudo HTML estático — basta abrir `index.html` no navegador. Ou servir:
 
 ```
 python -m http.server 8000
@@ -30,7 +44,7 @@ E acessar `http://localhost:8000`.
 
 ## Publicar no GitHub Pages
 
-Como o jogo está em `index.html` na raiz, é só ir em **Settings → Pages**, escolher a branch `main` / pasta `/root`, e o jogo fica no ar em `https://<usuario>.github.io/esteira-rush/`.
+Como o hub está em `index.html` na raiz, é só ir em **Settings → Pages**, escolher a branch `main` / pasta `/root`, e o arcade fica no ar em `https://<usuario>.github.io/esteira-rush/`.
 
 ## Stack
 
@@ -38,14 +52,7 @@ Como o jogo está em `index.html` na raiz, é só ir em **Settings → Pages**, 
 - Loop com `requestAnimationFrame` e delta time
 - Áudio via Web Audio API (destrava após o primeiro toque, com botão de mudo)
 - Fontes: Zen Maru Gothic + M PLUS Rounded 1c
-- Recorde persistido via `localStorage`
-
-## Roadmap
-
-- [x] Persistência do recorde (`localStorage`)
-- [x] Modo 2 jogadores dividindo a esteira (disputa de mesa, sem backend)
-- [ ] Trocar os emojis por arte do próprio cardápio (menu jogável)
-- [x] "Prato do dia" com bônus de pontuação (+50%)
+- Recorde persistido via `localStorage` (Festival Rush)
 
 ## Licença
 

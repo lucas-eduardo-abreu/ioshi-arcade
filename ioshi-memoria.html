@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Memória</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --ai:#2c2016; --ai-deep:#241a12;
+    --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#8aa35a; --gold:#f0b84a; --ink:#241c12;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:'M PLUS Rounded 1c',system-ui,sans-serif;
+    background:var(--sumi);color:var(--kinari);
+    overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;
+  }
+  #app{
+    position:relative;min-height:100dvh;width:100vw;overflow:hidden;
+    display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 4%, rgba(246,169,78,.16), transparent 42%),
+      radial-gradient(circle at 84% 92%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 66%);
+  }
+  .noren{position:absolute;top:0;left:0;right:0;height:8px;background:var(--shu);z-index:6;}
+
+  .hud{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;z-index:5;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(16px,2.4vw,22px);white-space:nowrap;}
+  .brand b{color:var(--shu-soft);}
+  .brand span{opacity:.55;font-weight:700;font-size:.62em;letter-spacing:.14em;}
+  .hud-spacer{flex:1;}
+  .stat{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);border-radius:12px;
+    padding:6px 12px;text-align:center;min-width:64px;line-height:1.05;}
+  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .stat .v{font-family:'Zen Maru Gothic';font-weight:700;font-size:19px;}
+  .stat.time .v{color:var(--gold);}
+  .iconbtn{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);color:var(--kinari);
+    border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;display:grid;place-items:center;}
+  .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .board-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 16px 20px;}
+  .board{display:grid;gap:clamp(8px,1.6vw,14px);width:100%;max-width:min(92vw,640px);}
+
+  .card{position:relative;aspect-ratio:3/4;cursor:pointer;perspective:800px;touch-action:manipulation;}
+  .card-inner{position:absolute;inset:0;transition:transform .38s cubic-bezier(.2,.8,.25,1);
+    transform-style:preserve-3d;}
+  .card.flipped .card-inner,.card.matched .card-inner{transform:rotateY(180deg);}
+  .face{position:absolute;inset:0;border-radius:14px;backface-visibility:hidden;
+    display:grid;place-items:center;overflow:hidden;box-shadow:0 6px 12px rgba(0,0,0,.4);}
+  .back{
+    background:
+      radial-gradient(circle at 30% 24%, rgba(255,255,255,.14), transparent 42%),
+      repeating-linear-gradient(135deg, rgba(0,0,0,.06) 0 8px, transparent 8px 16px),
+      linear-gradient(160deg,var(--shu),#c96a1e);
+    border:2px solid #f6b463;
+  }
+  .back .mon{font-family:'Zen Maru Gothic';font-weight:900;color:rgba(255,255,255,.92);
+    font-size:clamp(28px,6vw,44px);line-height:1;text-shadow:0 2px 4px rgba(0,0,0,.25);}
+  .back .tag{position:absolute;bottom:8px;font-size:9px;letter-spacing:.22em;color:rgba(255,255,255,.7);font-weight:700;}
+  .front{background:radial-gradient(circle at 40% 32%,#fffdf7,#f1ead8 60%,#e2d7bf);
+    transform:rotateY(180deg);border:2px solid #e6dcc4;}
+  .front .food{font-size:clamp(30px,7vw,52px);line-height:1;filter:drop-shadow(0 2px 1px rgba(0,0,0,.2));}
+  .card.matched{cursor:default;}
+  .card.matched .front{border-color:var(--matcha);box-shadow:0 0 0 3px rgba(138,163,90,.5),0 6px 12px rgba(0,0,0,.35);}
+  @keyframes matchpop{0%{transform:rotateY(180deg) scale(1);}50%{transform:rotateY(180deg) scale(1.08);}100%{transform:rotateY(180deg) scale(1);}}
+  .card.matched .card-inner{animation:matchpop .4s ease;}
+
+  /* overlays */
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;gap:16px;padding:24px;background:rgba(20,14,10,.9);backdrop-filter:blur(3px);}
+  .overlay.hidden{display:none;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(34px,8vw,62px);line-height:.95;}
+  .big-title .jp{display:block;font-size:.34em;color:var(--shu-soft);letter-spacing:.22em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{max-width:420px;opacity:.85;font-size:15px;line-height:1.5;}
+  .diffs{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+  .diff{font-family:'Zen Maru Gothic';font-weight:700;font-size:16px;background:rgba(0,0,0,.3);
+    border:2px solid rgba(246,236,216,.18);color:var(--kinari);border-radius:14px;padding:14px 22px;cursor:pointer;
+    transition:transform .08s,border-color .12s,background .12s;min-width:110px;}
+  .diff small{display:block;font-family:'M PLUS Rounded 1c';font-weight:400;font-size:11px;opacity:.65;margin-top:3px;}
+  .diff:hover,.diff.sel{border-color:var(--shu);background:rgba(232,134,46,.14);}
+  .diff:active{transform:translateY(2px);}
+  .diff:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #b25e1c,0 12px 20px rgba(0,0,0,.4);
+    transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #b25e1c,0 8px 14px rgba(0,0,0,.4);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .ghost{background:none;border:2px solid rgba(246,236,216,.3);color:var(--kinari);box-shadow:none;font-size:16px;padding:12px 26px;}
+  .ghost:active{transform:translateY(2px);box-shadow:none;}
+  .stars{font-size:44px;letter-spacing:6px;}
+  .stars .off{opacity:.22;}
+  .win-stat{display:flex;gap:26px;}
+  .win-stat div{font-family:'Zen Maru Gothic';font-weight:700;}
+  .win-stat .k{font-family:'M PLUS Rounded 1c';font-weight:400;font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .win-stat .v{font-size:26px;color:var(--gold);}
+  .newbest{color:var(--shu-soft);font-weight:800;font-size:15px;visibility:hidden;}
+  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+
+  @media (prefers-reduced-motion: reduce){
+    .card-inner{transition:none;}*{animation-duration:.01ms !important;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <a href="index.html" class="iconbtn" aria-label="Voltar ao menu" style="text-decoration:none;position:fixed;top:16px;left:16px;z-index:9999;">←</a>
+  <div class="noren"></div>
+  <div class="hud">
+    <span style="width:42px;height:42px;flex-shrink:0;" aria-hidden="true"></span>
+    <div class="brand"><b>IOSHI</b> MEMÓRIA <span>神経衰弱</span></div>
+    <div class="hud-spacer"></div>
+    <div class="stat"><div class="k">Tentativas</div><div class="v" id="moves">0</div></div>
+    <div class="stat time"><div class="k">Tempo</div><div class="v" id="time">0:00</div></div>
+    <div class="stat"><div class="k">Recorde</div><div class="v" id="best">—</div></div>
+    <button class="iconbtn" id="mute" aria-label="Som">🔊</button>
+  </div>
+
+  <div class="board-wrap"><div class="board" id="board"></div></div>
+
+  <!-- start -->
+  <div class="overlay" id="startScreen">
+    <div class="big-title"><span class="jp">寿司 · MEMÓRIA</span>ACHE OS <em>PARES</em></div>
+    <p class="sub">Vire duas cartas por vez e encontre os pares de sushi. Menos tentativas, mais estrelas. Escolha o tamanho do desafio:</p>
+    <div class="diffs" id="diffs">
+      <button class="diff" data-pairs="6" data-cols="4">Fácil<small>6 pares</small></button>
+      <button class="diff sel" data-pairs="8" data-cols="4">Médio<small>8 pares</small></button>
+      <button class="diff" data-pairs="10" data-cols="5">Difícil<small>10 pares</small></button>
+    </div>
+    <button class="cta" id="startBtn">Começar</button>
+  </div>
+
+  <!-- win -->
+  <div class="overlay hidden" id="winScreen">
+    <div class="stars" id="stars"></div>
+    <div class="big-title" style="font-size:clamp(28px,7vw,48px);">卓効! <em>Completo</em></div>
+    <div class="win-stat">
+      <div><div class="k">Tentativas</div><div class="v" id="winMoves">0</div></div>
+      <div><div class="k">Tempo</div><div class="v" id="winTime">0:00</div></div>
+    </div>
+    <div class="newbest" id="newBest">✦ Novo recorde! ✦</div>
+    <div class="row">
+      <button class="cta" id="againBtn">Jogar de novo</button>
+      <button class="cta ghost" id="menuBtn">Trocar dificuldade</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const POOL = ['🍣','🍤','🍥','🍙','🍡','🥟','🍜','🍵','🍶','🐙','🦐','🌸'];
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = s => document.querySelector(s);
+  const board=$('#board'), movesEl=$('#moves'), timeEl=$('#time'), bestEl=$('#best'),
+        startScreen=$('#startScreen'), winScreen=$('#winScreen'),
+        starsEl=$('#stars'), winMoves=$('#winMoves'), winTime=$('#winTime'),
+        newBest=$('#newBest'), diffs=$('#diffs'), muteBtn=$('#mute');
+
+  let pairs=8, cols=4, deck=[], first=null, lock=false, moves=0, matched=0,
+      startedAt=0, timerId=null, muted=false, best={};
+
+  // ---- audio ----
+  let ac=null;
+  function beep(f,d,type,v){ if(muted)return;
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}
+  }
+  const sFlip=()=>beep(520,0.06,'sine',0.04);
+  const sMatch=()=>{beep(660,0.09,'triangle',0.07);setTimeout(()=>beep(880,0.1,'triangle',0.06),60);};
+  const sNo=()=>beep(220,0.12,'sine',0.05);
+  const sWin=()=>{[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,0.16,'triangle',0.07),i*120));};
+  muteBtn.addEventListener('click',()=>{muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';});
+
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function fmt(s){const m=Math.floor(s/60);return m+':'+String(s%60).padStart(2,'0');}
+
+  diffs.addEventListener('click',e=>{
+    const b=e.target.closest('.diff'); if(!b)return;
+    diffs.querySelectorAll('.diff').forEach(d=>d.classList.remove('sel'));
+    b.classList.add('sel'); pairs=+b.dataset.pairs; cols=+b.dataset.cols;
+  });
+
+  function build(){
+    const chosen=shuffle(POOL.slice()).slice(0,pairs);
+    deck=shuffle([...chosen,...chosen]);
+    board.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+    board.innerHTML='';
+    deck.forEach((emo,i)=>{
+      const c=document.createElement('div'); c.className='card'; c.dataset.emo=emo; c.dataset.i=i;
+      c.innerHTML=`<div class="card-inner">
+        <div class="face back"><div class="mon">祭</div><div class="tag">IOSHI</div></div>
+        <div class="face front"><div class="food">${emo}</div></div></div>`;
+      c.addEventListener('click',()=>onCard(c));
+      board.appendChild(c);
+    });
+  }
+
+  function startTimer(){
+    startedAt=Date.now();
+    timerId=setInterval(()=>{timeEl.textContent=fmt(Math.floor((Date.now()-startedAt)/1000));},500);
+  }
+
+  function onCard(c){
+    if(lock||c.classList.contains('flipped')||c.classList.contains('matched'))return;
+    if(!startedAt) startTimer();
+    c.classList.add('flipped'); sFlip();
+    if(!first){ first=c; return; }
+    moves++; movesEl.textContent=moves; lock=true;
+    if(first.dataset.emo===c.dataset.emo){
+      const a=first,b=c; first=null;
+      setTimeout(()=>{a.classList.add('matched');b.classList.add('matched');
+        matched++; sMatch(); lock=false;
+        if(matched===pairs) win();
+      },reduceMotion?60:340);
+    } else {
+      const a=first,b=c; first=null;
+      setTimeout(()=>{a.classList.remove('flipped');b.classList.remove('flipped');sNo();lock=false;},780);
+    }
+  }
+
+  function stars(){
+    const perfect=pairs;                        // acertar tudo de primeira
+    if(moves<=Math.ceil(perfect*1.35)) return 3;
+    if(moves<=Math.ceil(perfect*1.9)) return 2;
+    return 1;
+  }
+
+  function win(){
+    clearInterval(timerId);
+    const secs=Math.floor((Date.now()-startedAt)/1000);
+    const st=stars();
+    starsEl.innerHTML='';
+    for(let i=0;i<3;i++){const s=document.createElement('span');s.textContent='★';if(i>=st)s.className='off';starsEl.appendChild(s);}
+    winMoves.textContent=moves; winTime.textContent=fmt(secs);
+    const key='p'+pairs; const prev=best[key];
+    const isBest=!prev || secs<prev.secs || (secs===prev.secs && moves<prev.moves);
+    if(isBest){ best[key]={secs,moves}; bestEl.textContent=fmt(secs); }
+    newBest.style.visibility=isBest?'visible':'hidden';
+    sWin();
+    winScreen.classList.remove('hidden');
+  }
+
+  function reset(){
+    first=null;lock=false;moves=0;matched=0;startedAt=0;
+    clearInterval(timerId);movesEl.textContent='0';timeEl.textContent='0:00';
+    const b=best['p'+pairs]; bestEl.textContent=b?fmt(b.secs):'—';
+  }
+
+  function play(){
+    reset(); build();
+    startScreen.classList.add('hidden'); winScreen.classList.add('hidden');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+  }
+
+  $('#startBtn').addEventListener('click',play);
+  $('#againBtn').addEventListener('click',play);
+  $('#menuBtn').addEventListener('click',()=>{winScreen.classList.add('hidden');startScreen.classList.remove('hidden');});
+})();
+</script>
+</body>
+</html>

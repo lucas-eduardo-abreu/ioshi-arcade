@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Pega o Gato</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --ai:#2c2016; --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#8aa35a; --gold:#f0b84a; --ink:#241c12; --bad:#e0512f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  #app{position:relative;min-height:100dvh;width:100vw;overflow:hidden;display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 4%, rgba(246,169,78,.16), transparent 42%),
+      radial-gradient(circle at 84% 92%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 66%);}
+  .noren{position:absolute;top:0;left:0;right:0;height:8px;background:var(--shu);z-index:6;}
+
+  .hud{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;z-index:5;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(15px,2.3vw,22px);white-space:nowrap;}
+  .brand b{color:var(--shu-soft);} .brand span{opacity:.55;font-weight:700;font-size:.6em;letter-spacing:.12em;}
+  .hud-spacer{flex:1;}
+  .stat{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);border-radius:12px;
+    padding:6px 12px;text-align:center;min-width:60px;line-height:1.05;}
+  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .stat .v{font-family:'Zen Maru Gothic';font-weight:700;font-size:19px;}
+  .stat.combo .v{color:var(--shu-soft);}
+  .lives{font-size:18px;letter-spacing:2px;}
+  .iconbtn{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);color:var(--kinari);
+    border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;display:grid;place-items:center;}
+  .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .stage{flex:1;display:flex;align-items:center;justify-content:center;padding:8px 16px 22px;}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2.2vw,20px);width:100%;max-width:min(92vw,560px);}
+  .hole{position:relative;aspect-ratio:1;border-radius:22px;overflow:hidden;
+    background:radial-gradient(circle at 50% 120%, #2a1e13, #191108);
+    border:2px solid #3c2c1c;box-shadow:inset 0 -8px 16px rgba(0,0,0,.6);}
+  .plate{position:absolute;left:50%;bottom:12%;transform:translateX(-50%);
+    width:64%;aspect-ratio:1;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 40% 34%,#fffdf7,#eee5cf 60%,#d8cbb0);border:3px solid #e6dcc4;
+    box-shadow:0 5px 8px rgba(0,0,0,.4);z-index:1;}
+  .plate .food{font-size:clamp(24px,6vw,40px);line-height:1;}
+  .plate.empty{opacity:.28;filter:grayscale(.6);}
+
+  .cat{position:absolute;left:50%;bottom:6%;transform:translate(-50%,130%);
+    width:78%;aspect-ratio:1;display:grid;place-items:center;cursor:pointer;z-index:2;
+    transition:transform .16s cubic-bezier(.3,1.4,.5,1);touch-action:none;}
+  .cat.up{transform:translate(-50%,0);}
+  .cat.down{transform:translate(-50%,130%);}
+  .cat .body{font-size:clamp(40px,10vw,64px);line-height:1;filter:drop-shadow(0 3px 3px rgba(0,0,0,.4));}
+  .cat.gold .body{filter:drop-shadow(0 0 10px rgba(240,184,74,.9)) drop-shadow(0 3px 3px rgba(0,0,0,.4));}
+  .cat.gold::after{content:"";position:absolute;inset:8%;border-radius:50%;
+    background:radial-gradient(circle, rgba(240,184,74,.35), transparent 70%);z-index:-1;}
+
+  .bop{position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);z-index:3;pointer-events:none;
+    font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(20px,5vw,30px);color:var(--gold);text-shadow:0 2px 6px rgba(0,0,0,.6);}
+  @keyframes bopup{0%{opacity:0;transform:translate(-50%,-30%) scale(.6);}25%{opacity:1;}100%{opacity:0;transform:translate(-50%,-140%) scale(1);}}
+  .bop{animation:bopup .6s ease-out forwards;}
+  .bop.bad{color:var(--bad);}
+
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:16px;padding:24px;background:rgba(20,14,10,.9);backdrop-filter:blur(3px);}
+  .overlay.hidden{display:none;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(32px,7.5vw,58px);line-height:.95;}
+  .big-title .jp{display:block;font-size:.34em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{max-width:430px;opacity:.85;font-size:15px;line-height:1.5;}
+  .how{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;margin:2px 0;}
+  .how div{display:flex;align-items:center;gap:8px;font-size:14px;opacity:.9;} .how .e{font-size:24px;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #b25e1c,0 12px 20px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #b25e1c,0 8px 14px rgba(0,0,0,.4);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(46px,12vw,92px);color:var(--gold);line-height:1;}
+  .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
+  .newbest{color:var(--shu-soft);font-weight:800;font-size:15px;visibility:hidden;}
+
+  #app.shake{animation:shk .3s;}
+  @keyframes shk{0%,100%{transform:translate(0,0);}25%{transform:translate(-7px,2px);}75%{transform:translate(6px,-2px);}}
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;}.cat{transition:none;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <a href="index.html" class="iconbtn" aria-label="Voltar ao menu" style="text-decoration:none;position:fixed;top:16px;left:16px;z-index:9999;">←</a>
+  <div class="noren"></div>
+  <div class="hud">
+    <span style="width:42px;height:42px;flex-shrink:0;" aria-hidden="true"></span>
+    <div class="brand"><b>IOSHI</b> PEGA O GATO <span>泥棒猫</span></div>
+    <div class="hud-spacer"></div>
+    <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+    <div class="stat combo"><div class="k">Combo</div><div class="v" id="combo">x1</div></div>
+    <div class="stat"><div class="k">Vidas</div><div class="v lives" id="lives">❤❤❤</div></div>
+    <button class="iconbtn" id="mute" aria-label="Som">🔊</button>
+  </div>
+
+  <div class="stage"><div class="grid" id="grid"></div></div>
+
+  <div class="overlay" id="startScreen">
+    <div class="big-title"><span class="jp">泥棒猫 · GATO LADRÃO</span>PEGA O <em>GATO</em></div>
+    <p class="sub">Os gatos sobem pra roubar o sushi do balcão. Toque neles pra barrar antes que levem a peça!</p>
+    <div class="how">
+      <div><span class="e">🐱</span> toque pra barrar</div>
+      <div><span class="e">🐈</span> dourado = bônus</div>
+      <div><span class="e">🍣</span> roubou = −1 vida</div>
+    </div>
+    <button class="cta" id="startBtn">Começar</button>
+    <p class="sub" style="font-size:12px;opacity:.55;">3 vidas • os gatos ficam cada vez mais rápidos</p>
+  </div>
+
+  <div class="overlay hidden" id="overScreen">
+    <div class="final-lbl">Balcão salvo por</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="newbest" id="newBest">✦ Novo recorde! ✦</div>
+    <div class="sub" id="overMsg"></div>
+    <button class="cta" id="againBtn">Jogar de novo</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const SUSHI=['🍣','🍤','🍥','🍙','🍡'];
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $=s=>document.querySelector(s);
+  const grid=$('#grid'), scoreEl=$('#score'), comboEl=$('#combo'), livesEl=$('#lives'),
+        startScreen=$('#startScreen'), overScreen=$('#overScreen'), finalScore=$('#finalScore'),
+        newBest=$('#newBest'), overMsg=$('#overMsg'), app=$('#app'), muteBtn=$('#mute');
+
+  const N=9;
+  let holes=[], running=false, score=0, combo=0, lives=3, startedAt=0, best=0, spawnTid=null, muted=false;
+
+  let ac=null;
+  function beep(f,d,type,v){ if(muted)return;
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}}
+  const sBop=()=>{beep(720,0.06,'square',0.06);setTimeout(()=>beep(980,0.06,'square',0.05),40);};
+  const sGold=()=>{[660,880,1170].forEach((f,i)=>setTimeout(()=>beep(f,0.08,'triangle',0.07),i*60));};
+  const sSteal=()=>beep(160,0.24,'sawtooth',0.09);
+  muteBtn.addEventListener('click',()=>{muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';});
+
+  const lerp=(a,b,t)=>a+(b-a)*Math.max(0,Math.min(1,t));
+  const rand=a=>a[Math.floor(Math.random()*a.length)];
+  const elapsed=()=>(Date.now()-startedAt)/1000;
+
+  function build(){
+    grid.innerHTML=''; holes=[];
+    for(let i=0;i<N;i++){
+      const h=document.createElement('div'); h.className='hole';
+      const plate=document.createElement('div'); plate.className='plate';
+      plate.innerHTML=`<span class="food">${rand(SUSHI)}</span>`;
+      h.appendChild(plate);
+      grid.appendChild(h);
+      holes.push({el:h, plate, cat:null, tid:null});
+    }
+  }
+
+  function popStars(h,txt,bad){
+    const b=document.createElement('div'); b.className='bop'+(bad?' bad':''); b.textContent=txt;
+    h.el.appendChild(b); setTimeout(()=>b.remove(),600);
+  }
+
+  function spawnCat(){
+    const free=holes.filter(h=>!h.cat && !h.plate.classList.contains('empty'));
+    if(!free.length) return;
+    const h=rand(free);
+    const gold=Math.random()<0.12;
+    const cat=document.createElement('div'); cat.className='cat'+(gold?' gold':'');
+    cat.innerHTML=`<span class="body">${gold?'🐈':'🐱'}</span>`;
+    h.el.appendChild(cat); h.cat=cat;
+    // rise
+    requestAnimationFrame(()=>requestAnimationFrame(()=>cat.classList.add('up')));
+    const dur=lerp(1350,760,elapsed()/60)*(gold?0.8:1);
+    cat.addEventListener('pointerdown',ev=>{ev.preventDefault();bop(h,gold);},{passive:false});
+    h.tid=setTimeout(()=>steal(h),dur);
+  }
+
+  function retreat(h){
+    if(!h.cat) return;
+    const c=h.cat; h.cat=null; clearTimeout(h.tid); h.tid=null;
+    c.classList.remove('up'); c.classList.add('down');
+    setTimeout(()=>c.remove(),200);
+  }
+
+  function bop(h,gold){
+    if(!running || !h.cat) return;
+    combo++; const mult=Math.min(1+Math.floor(combo/5),5);
+    const pts=(gold?30:10)*mult; score+=pts; scoreEl.textContent=score;
+    comboEl.textContent='x'+mult;
+    popStars(h,'+'+pts,false);
+    gold?sGold():sBop();
+    retreat(h);
+  }
+
+  function steal(h){
+    if(!running || !h.cat) return;
+    // cat grabs sushi
+    h.plate.classList.add('empty');
+    popStars(h,'roubou!',true);
+    combo=0; comboEl.textContent='x1';
+    lives--; livesEl.textContent='❤'.repeat(Math.max(0,lives))||'—';
+    sSteal(); if(!reduceMotion){app.classList.remove('shake');void app.offsetWidth;app.classList.add('shake');}
+    retreat(h);
+    // sushi comes back after a bit
+    setTimeout(()=>{ if(running){ h.plate.classList.remove('empty'); h.plate.innerHTML=`<span class="food">${rand(SUSHI)}</span>`; } }, 1400);
+    if(lives<=0) endGame();
+  }
+
+  function scheduleSpawn(){
+    if(!running) return;
+    const gap=lerp(950,420,elapsed()/60);
+    spawnTid=setTimeout(()=>{
+      if(!running) return;
+      spawnCat();
+      if(Math.random()<lerp(0,0.32,elapsed()/45)) spawnCat();
+      scheduleSpawn();
+    }, gap);
+  }
+
+  function endGame(){
+    running=false; clearTimeout(spawnTid);
+    holes.forEach(h=>{if(h.tid)clearTimeout(h.tid); if(h.cat)retreat(h);});
+    const secs=Math.floor(elapsed());
+    finalScore.textContent=score;
+    const isBest=score>best; if(isBest)best=score;
+    newBest.style.visibility=isBest?'visible':'hidden';
+    overMsg.textContent = `Você defendeu o balcão por ${secs}s. ` + (score>=400?'Guardião do sushi! 🍶':score>=200?'Reflexo afiado!':'Os gatos agradecem a refeição. 😹');
+    overScreen.classList.remove('hidden');
+  }
+
+  function play(){
+    running=true; score=0; combo=0; lives=3; startedAt=Date.now();
+    scoreEl.textContent='0'; comboEl.textContent='x1'; livesEl.textContent='❤❤❤';
+    startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+    build(); scheduleSpawn();
+  }
+  $('#startBtn').addEventListener('click',play);
+  $('#againBtn').addEventListener('click',play);
+})();
+</script>
+</body>
+</html>

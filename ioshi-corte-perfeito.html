@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ioshi · Corte Perfeito</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sumi:#1c1410; --ai:#2c2016; --kinari:#f6ecd8; --shu:#e8862e; --shu-soft:#f6a94e;
+    --matcha:#8aa35a; --gold:#f0b84a; --ink:#241c12; --bad:#e0512f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif;background:var(--sumi);color:var(--kinari);
+    overflow:hidden;-webkit-user-select:none;user-select:none;touch-action:manipulation;}
+  #app{position:relative;min-height:100dvh;width:100vw;overflow:hidden;display:flex;flex-direction:column;
+    background:
+      radial-gradient(circle at 50% 4%, rgba(246,169,78,.16), transparent 42%),
+      radial-gradient(circle at 84% 92%, rgba(138,163,90,.08), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg,#34251a,var(--sumi) 66%);}
+  .noren{position:absolute;top:0;left:0;right:0;height:8px;background:var(--shu);z-index:6;}
+
+  .hud{display:flex;align-items:center;gap:10px;padding:16px 16px 8px;z-index:5;}
+  .brand{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(15px,2.3vw,22px);white-space:nowrap;}
+  .brand b{color:var(--shu-soft);} .brand span{opacity:.55;font-weight:700;font-size:.6em;letter-spacing:.12em;}
+  .hud-spacer{flex:1;}
+  .stat{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);border-radius:12px;
+    padding:6px 12px;text-align:center;min-width:60px;line-height:1.05;}
+  .stat .k{font-size:9px;letter-spacing:.14em;text-transform:uppercase;opacity:.6;}
+  .stat .v{font-family:'Zen Maru Gothic';font-weight:700;font-size:19px;}
+  .stat.combo .v{color:var(--shu-soft);}
+  .lives{font-size:18px;letter-spacing:2px;}
+  .iconbtn{background:rgba(0,0,0,.28);border:1px solid rgba(246,236,216,.14);color:var(--kinari);
+    border-radius:12px;width:42px;height:42px;font-size:19px;cursor:pointer;display:grid;place-items:center;}
+  .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+
+  .stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:8px 16px 22px;cursor:pointer;}
+  .fish{font-size:clamp(48px,12vw,84px);line-height:1;filter:drop-shadow(0 4px 4px rgba(0,0,0,.35));transition:transform .12s;}
+  .fish.cut{animation:cut .3s ease;}
+  @keyframes cut{0%{transform:scale(1);}40%{transform:scale(1.12) rotate(-3deg);}100%{transform:scale(1);}}
+
+  .board{position:relative;width:min(90vw,560px);height:76px;border-radius:16px;overflow:hidden;
+    background:linear-gradient(180deg,#4a3624,#33251799);border:2px solid #5a4430;
+    box-shadow:inset 0 4px 10px rgba(0,0,0,.4),0 8px 16px rgba(0,0,0,.3);}
+  .board::before{content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg, rgba(0,0,0,.10) 0 3px, transparent 3px 30px);}
+  .zone{position:absolute;top:0;bottom:0;background:rgba(232,134,46,.32);border-left:2px solid rgba(246,169,78,.6);border-right:2px solid rgba(246,169,78,.6);}
+  .core{position:absolute;top:0;bottom:0;background:rgba(240,184,74,.55);box-shadow:0 0 16px rgba(240,184,74,.6);}
+  .knife{position:absolute;top:-10px;bottom:-10px;width:4px;background:linear-gradient(180deg,#fff,#cfd6de);
+    box-shadow:0 0 10px rgba(255,255,255,.8);transform:translateX(-2px);z-index:3;}
+  .knife::before{content:"🔪";position:absolute;top:-30px;left:50%;transform:translateX(-50%) scaleX(-1);font-size:26px;}
+
+  .hint{font-size:14px;opacity:.7;letter-spacing:.02em;}
+  .result{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(22px,5vw,34px);min-height:1.3em;}
+  .result.perfect{color:var(--gold);} .result.good{color:var(--shu-soft);} .result.miss{color:var(--bad);}
+
+  .overlay{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;gap:16px;padding:24px;background:rgba(20,14,10,.9);backdrop-filter:blur(3px);}
+  .overlay.hidden{display:none;}
+  .big-title{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(32px,7.5vw,58px);line-height:.95;}
+  .big-title .jp{display:block;font-size:.34em;color:var(--shu-soft);letter-spacing:.2em;margin-bottom:8px;}
+  .big-title em{color:var(--shu-soft);font-style:normal;}
+  .sub{max-width:430px;opacity:.85;font-size:15px;line-height:1.5;}
+  .cta{font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;background:var(--shu);color:#fff;border:none;
+    border-radius:16px;padding:16px 40px;cursor:pointer;box-shadow:0 8px 0 #b25e1c,0 12px 20px rgba(0,0,0,.4);transition:transform .08s,box-shadow .08s;}
+  .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #b25e1c,0 8px 14px rgba(0,0,0,.4);}
+  .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(46px,12vw,92px);color:var(--gold);line-height:1;}
+  .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
+  .newbest{color:var(--shu-soft);font-weight:800;font-size:15px;visibility:hidden;}
+
+  @media (prefers-reduced-motion: reduce){*{animation-duration:.01ms !important;}}
+</style>
+</head>
+<body>
+<div id="app">
+  <a href="index.html" class="iconbtn" aria-label="Voltar ao menu" style="text-decoration:none;position:fixed;top:16px;left:16px;z-index:9999;">←</a>
+  <div class="noren"></div>
+  <div class="hud">
+    <span style="width:42px;height:42px;flex-shrink:0;" aria-hidden="true"></span>
+    <div class="brand"><b>IOSHI</b> CORTE PERFEITO <span>板前の技</span></div>
+    <div class="hud-spacer"></div>
+    <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
+    <div class="stat combo"><div class="k">Combo</div><div class="v" id="combo">x1</div></div>
+    <div class="stat"><div class="k">Vidas</div><div class="v lives" id="lives">❤❤❤</div></div>
+    <button class="iconbtn" id="mute" aria-label="Som">🔊</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="fish" id="fish">🐟</div>
+    <div class="board" id="board">
+      <div class="zone" id="zone"></div>
+      <div class="core" id="core"></div>
+      <div class="knife" id="knife"></div>
+    </div>
+    <div class="result" id="result"></div>
+    <div class="hint" id="hint">toque quando a faca cruzar a zona dourada</div>
+  </div>
+
+  <div class="overlay" id="startScreen">
+    <div class="big-title"><span class="jp">板前の技 · A TÉCNICA</span>CORTE <em>PERFEITO</em></div>
+    <p class="sub">A faca varre a tábua. Toque na tela no instante exato em que ela cruzar a <b>zona dourada</b>. Miolo do dourado = corte perfeito. A cada corte a faca acelera e a zona encolhe.</p>
+    <button class="cta" id="startBtn">Começar</button>
+    <p class="sub" style="font-size:12px;opacity:.55;">3 vidas • cortes perfeitos seguidos multiplicam os pontos</p>
+  </div>
+
+  <div class="overlay hidden" id="overScreen">
+    <div class="final-lbl">Fatias servidas</div>
+    <div class="final-score" id="finalScore">0</div>
+    <div class="newbest" id="newBest">✦ Novo recorde! ✦</div>
+    <div class="sub" id="overMsg"></div>
+    <button class="cta" id="againBtn">Jogar de novo</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const FISH=['🐟','🍣','🍤','🦐','🐙','🍥'];
+  const reduceMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $=s=>document.querySelector(s);
+  const stage=$('#stage'), board=$('#board'), zoneEl=$('#zone'), coreEl=$('#core'), knifeEl=$('#knife'),
+        fishEl=$('#fish'), resultEl=$('#result'), hintEl=$('#hint'),
+        scoreEl=$('#score'), comboEl=$('#combo'), livesEl=$('#lives'),
+        startScreen=$('#startScreen'), overScreen=$('#overScreen'),
+        finalScore=$('#finalScore'), newBest=$('#newBest'), overMsg=$('#overMsg'), muteBtn=$('#mute');
+
+  let running=false, score=0, combo=0, lives=3, slices=0, best=0, muted=false;
+  let pos=0, dir=1, speed=0.6, center=0.5, goodHalf=0.13, perfHalf=0.05, canCut=false, rafId=null, lastTs=0;
+
+  let ac=null;
+  function beep(f,d,type,v){ if(muted)return;
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();
+      const o=ac.createOscillator(),g=ac.createGain();o.type=type||'sine';o.frequency.value=f;
+      g.gain.value=v||0.05;o.connect(g);g.connect(ac.destination);const t=ac.currentTime;
+      g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.start(t);o.stop(t+d);}catch(e){}}
+  const sPerfect=()=>{[784,1046,1318].forEach((f,i)=>setTimeout(()=>beep(f,0.1,'triangle',0.07),i*55));};
+  const sGood=()=>beep(560,0.1,'triangle',0.06);
+  const sMiss=()=>beep(150,0.24,'sawtooth',0.08);
+  const sSwish=()=>beep(900,0.05,'sine',0.03);
+  muteBtn.addEventListener('click',()=>{muted=!muted;muteBtn.textContent=muted?'🔇':'🔊';});
+
+  const lerp=(a,b,t)=>a+(b-a)*Math.max(0,Math.min(1,t));
+  const rand=a=>a[Math.floor(Math.random()*a.length)];
+
+  function newRound(){
+    const r=slices;
+    speed=lerp(0.55,1.7,r/24);
+    goodHalf=lerp(0.13,0.05,r/24);
+    perfHalf=lerp(0.055,0.02,r/24);
+    center=lerp(goodHalf,1-goodHalf,Math.random());
+    fishEl.textContent=rand(FISH);
+    // draw zones
+    zoneEl.style.left=((center-goodHalf)*100)+'%';
+    zoneEl.style.width=(goodHalf*2*100)+'%';
+    coreEl.style.left=((center-perfHalf)*100)+'%';
+    coreEl.style.width=(perfHalf*2*100)+'%';
+    canCut=true;
+  }
+
+  function loop(ts){
+    if(!running){return;}
+    if(!lastTs)lastTs=ts;
+    const dt=Math.min(0.05,(ts-lastTs)/1000); lastTs=ts;
+    pos+=dir*speed*dt;
+    if(pos>=1){pos=1;dir=-1;} else if(pos<=0){pos=0;dir=1;}
+    knifeEl.style.left=(pos*100)+'%';
+    rafId=requestAnimationFrame(loop);
+  }
+
+  function cut(){
+    if(!running || !canCut) return;
+    canCut=false;
+    const d=Math.abs(pos-center);
+    fishEl.classList.remove('cut'); void fishEl.offsetWidth; fishEl.classList.add('cut');
+    if(d<=perfHalf){
+      combo++; const mult=Math.min(1+Math.floor(combo/3),5);
+      const pts=100*mult; score+=pts; scoreEl.textContent=score;
+      comboEl.textContent='x'+mult;
+      resultEl.textContent='Perfeito! +'+pts; resultEl.className='result perfect';
+      slices++; sPerfect();
+      next(360);
+    } else if(d<=goodHalf){
+      combo=0; comboEl.textContent='x1';
+      const pts=40; score+=pts; scoreEl.textContent=score;
+      resultEl.textContent='Bom +'+pts; resultEl.className='result good';
+      slices++; sGood();
+      next(360);
+    } else {
+      combo=0; comboEl.textContent='x1'; lives--;
+      livesEl.textContent='❤'.repeat(Math.max(0,lives))||'—';
+      resultEl.textContent='Errou o tempo!  −1 vida'; resultEl.className='result miss';
+      sMiss();
+      if(lives<=0){ next(700,true); } else { next(600); }
+    }
+  }
+
+  function next(delay,over){
+    setTimeout(()=>{
+      if(over){ endGame(); return; }
+      resultEl.textContent='';
+      newRound();
+    }, delay);
+  }
+
+  stage.addEventListener('pointerdown',ev=>{ev.preventDefault();cut();},{passive:false});
+  document.addEventListener('keydown',e=>{ if(e.code==='Space'){ e.preventDefault(); if(running)cut(); } });
+
+  function endGame(){
+    running=false; cancelAnimationFrame(rafId);
+    finalScore.textContent=score;
+    const isBest=score>best; if(isBest)best=score;
+    newBest.style.visibility=isBest?'visible':'hidden';
+    overMsg.textContent = `${slices} fatias no ponto. ` + (score>=1000?'Mão de mestre! 🍶':score>=400?'Corte afiado!':'Continua treinando o pulso.');
+    overScreen.classList.remove('hidden');
+  }
+
+  function play(){
+    running=true; score=0; combo=0; lives=3; slices=0; pos=0; dir=1; lastTs=0;
+    scoreEl.textContent='0'; comboEl.textContent='x1'; livesEl.textContent='❤❤❤'; resultEl.textContent='';
+    startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
+    try{ac=ac||new(window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();}catch(e){}
+    newRound(); rafId=requestAnimationFrame(loop);
+  }
+  $('#startBtn').addEventListener('click',play);
+  $('#againBtn').addEventListener('click',play);
+})();
+</script>
+</body>
+</html>
