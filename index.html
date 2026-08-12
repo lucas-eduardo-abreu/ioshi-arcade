@@ -3,21 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Esteira Rush</title>
+<title>Ioshi · Festival Rush</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
-    --sumi:#151a24;      /* ink navy-black (night izakaya) */
-    --ai:#20304d;        /* indigo panel */
-    --ai-deep:#182338;
-    --kinari:#f3ead6;    /* rice paper */
-    --shu:#e0472f;       /* vermilion (torii red) */
-    --shu-soft:#f06a4f;
-    --matcha:#7ba05b;    /* wasabi green */
-    --gold:#e8b64c;
-    --ink:#232019;
+    /* Identidade Ioshi: madeira quente + laranja tangerina + pôr do sol do templo */
+    --sumi:#1c1410;      /* madeira escura (fundo) */
+    --ai:#2c2016;        /* painel madeira */
+    --ai-deep:#241a12;
+    --kinari:#f6ecd8;    /* creme */
+    --shu:#e8862e;       /* laranja tangerina (estofado Ioshi) */
+    --shu-soft:#f6a94e;  /* laranja claro (brilho do pôr do sol) */
+    --matcha:#8aa35a;    /* verde musgo (as bolinhas de musgo do salão) */
+    --gold:#f0b84a;
+    --ink:#241c12;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
@@ -29,13 +30,15 @@
     -webkit-user-select:none;user-select:none;
     touch-action:manipulation;
   }
+  .hidden{display:none !important;}
   #app{
     position:relative;height:100dvh;width:100vw;overflow:hidden;
     background:
-      radial-gradient(circle at 18% 12%, rgba(224,71,47,.10), transparent 42%),
-      radial-gradient(circle at 82% 88%, rgba(123,160,91,.10), transparent 45%),
-      repeating-radial-gradient(circle at 50% -60%, transparent 0 34px, rgba(255,255,255,.018) 34px 36px),
-      linear-gradient(180deg, var(--ai-deep), var(--sumi) 70%);
+      radial-gradient(circle at 50% 6%, rgba(246,169,78,.18), transparent 40%),
+      radial-gradient(circle at 16% 14%, rgba(232,134,46,.12), transparent 44%),
+      radial-gradient(circle at 84% 90%, rgba(138,163,90,.09), transparent 46%),
+      repeating-linear-gradient(92deg, rgba(0,0,0,.10) 0 3px, transparent 3px 24px),
+      linear-gradient(180deg, #34251a, var(--sumi) 68%);
   }
 
   /* ---- noren header ---- */
@@ -67,6 +70,7 @@
   .stat .v{font-family:'Zen Maru Gothic',sans-serif;font-weight:700;font-size:19px;}
   .stat.time .v{color:var(--gold);}
   .stat.time.low .v{color:var(--shu-soft);}
+  .stat.p2 .v{color:var(--matcha);}
   .iconbtn{
     background:rgba(0,0,0,.28);border:1px solid rgba(243,234,214,.14);
     color:var(--kinari);border-radius:12px;width:42px;height:42px;
@@ -74,9 +78,46 @@
   }
   .iconbtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
 
+  /* ---- daily special badge ---- */
+  .daily-wrap{
+    position:absolute;top:78px;left:0;right:0;z-index:4;
+    display:flex;justify-content:center;pointer-events:none;
+  }
+  .daily{
+    display:flex;align-items:center;gap:8px;
+    background:rgba(0,0,0,.32);border:1px solid rgba(240,184,74,.4);
+    border-radius:999px;padding:5px 16px 5px 10px;
+  }
+  .daily .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;}
+  .daily .food{font-size:19px;line-height:1;}
+  .daily .nm{font-family:'Zen Maru Gothic',sans-serif;font-weight:800;font-size:14px;}
+
+  /* ---- lanes (1 or 2 esteiras) ---- */
+  .lanes{
+    position:absolute;left:0;right:0;top:120px;bottom:3%;z-index:2;
+    display:flex;flex-direction:column;
+  }
+  .lane{
+    position:relative;flex:1;min-height:0;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .lanes.duo .lane[data-player="1"]{border-bottom:2px dashed rgba(246,236,216,.16);padding-bottom:4px;}
+  .lanes.duo .lane[data-player="2"]{padding-top:4px;}
+  .lane[data-player="2"]{display:none;}
+  .lanes.duo .lane[data-player="2"]{display:flex;}
+
+  .lane-tag{
+    display:none;position:absolute;top:2px;left:6px;z-index:4;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;
+    background:rgba(0,0,0,.3);border-radius:999px;padding:3px 10px;opacity:.85;
+    color:var(--gold);
+  }
+  .lane[data-player="2"] .lane-tag{color:var(--matcha);}
+  .lanes.duo .lane-tag{display:block;}
+
   /* ---- order ticket ---- */
   .ticket-wrap{
-    position:absolute;top:74px;left:0;right:0;z-index:4;
+    position:relative;z-index:4;
     display:flex;justify-content:center;pointer-events:none;
   }
   .ticket{
@@ -114,7 +155,7 @@
 
   /* ---- belt ---- */
   .belt{
-    position:absolute;left:0;right:0;bottom:9%;height:150px;z-index:2;
+    position:relative;flex-shrink:0;width:100%;height:130px;z-index:2;
     overflow:hidden;
     background:
       linear-gradient(180deg,#2a2018,#1a130e 55%,#120c08);
@@ -158,6 +199,8 @@
     box-shadow:inset 0 -4px 4px rgba(0,0,0,.2);position:relative;}
   .wmound::after{content:"";position:absolute;inset:0;border-radius:inherit;
     background:radial-gradient(circle at 30% 25%, rgba(255,255,255,.4), transparent 40%);}
+  /* daily-special tile accent */
+  .plate.daily .disc{border-color:var(--gold);box-shadow:0 8px 12px rgba(0,0,0,.45), 0 0 0 3px rgba(240,184,74,.35);}
 
   @keyframes grab{
     0%{transform:translate(var(--gx),var(--gy)) scale(1);}
@@ -173,6 +216,7 @@
   .float{position:absolute;z-index:3;font-family:'Zen Maru Gothic';font-weight:900;
     font-size:26px;color:var(--gold);pointer-events:none;text-shadow:0 2px 6px rgba(0,0,0,.6);}
   .float.bad{color:var(--shu-soft);}
+  .float.star{color:var(--gold);text-shadow:0 0 10px rgba(240,184,74,.7),0 2px 6px rgba(0,0,0,.6);}
   @keyframes floatup{0%{transform:translateY(0) scale(.8);opacity:0;}
     20%{opacity:1;transform:translateY(-8px) scale(1);}
     100%{transform:translateY(-64px) scale(1);opacity:0;}}
@@ -180,9 +224,9 @@
 
   /* combo badge */
   .combo{
-    position:absolute;left:50%;top:150px;transform:translateX(-50%);z-index:4;
+    position:absolute;left:50%;top:58px;transform:translateX(-50%);z-index:4;
     font-family:'Zen Maru Gothic';font-weight:900;color:var(--shu-soft);
-    font-size:clamp(22px,4vw,34px);opacity:0;pointer-events:none;
+    font-size:clamp(20px,3.6vw,30px);opacity:0;pointer-events:none;
     text-shadow:0 2px 10px rgba(0,0,0,.5);
   }
   .combo.show{animation:pop .5s ease;}
@@ -207,6 +251,7 @@
   .how{display:flex;gap:22px;flex-wrap:wrap;justify-content:center;margin:4px 0 2px;}
   .how div{display:flex;align-items:center;gap:8px;font-size:14px;opacity:.9;}
   .how .e{font-size:24px;}
+  .mode-select{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
   .cta{
     font-family:'Zen Maru Gothic';font-weight:900;font-size:22px;
     background:var(--shu);color:#fff;border:none;border-radius:16px;
@@ -215,9 +260,20 @@
   }
   .cta:active{transform:translateY(4px);box-shadow:0 4px 0 #a8321f, 0 8px 14px rgba(0,0,0,.4);}
   .cta:focus-visible{outline:3px solid var(--gold);outline-offset:3px;}
+  .cta.secondary{
+    background:transparent;color:var(--kinari);
+    border:2px solid var(--shu-soft);box-shadow:none;padding:14px 38px;
+  }
+  .cta.secondary:active{transform:translateY(2px);}
   .final-score{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(48px,12vw,96px);color:var(--gold);line-height:1;}
   .final-lbl{letter-spacing:.2em;text-transform:uppercase;font-size:12px;opacity:.7;}
   .newbest{color:var(--shu-soft);font-weight:800;font-size:16px;}
+  .duo-scores{display:flex;align-items:center;gap:20px;}
+  .duo-score{display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .duo-name{font-size:11px;letter-spacing:.14em;text-transform:uppercase;opacity:.7;}
+  .duo-val{font-family:'Zen Maru Gothic';font-weight:900;font-size:clamp(34px,8vw,56px);color:var(--gold);line-height:1;}
+  .duo-score.p2 .duo-val{color:var(--matcha);}
+  .duo-vs{font-family:'Zen Maru Gothic';font-weight:900;font-size:20px;opacity:.5;}
 
   #app.shake{animation:shk .3s;}
   @keyframes shk{0%,100%{transform:translate(0,0);}20%{transform:translate(-8px,3px);}
@@ -238,45 +294,81 @@
   <div class="redflash" id="redflash"></div>
 
   <div class="hud">
-    <div class="brand">鮨 <b>ESTEIRA</b> RUSH</div>
+    <div class="brand"><b>IOSHI</b> FESTIVAL RUSH</div>
     <div class="hud-spacer"></div>
-    <div class="stat"><div class="k">Pontos</div><div class="v" id="score">0</div></div>
-    <div class="stat"><div class="k">Recorde</div><div class="v" id="best">0</div></div>
+    <div class="stat" id="statA"><div class="k" id="statALabel">Pontos</div><div class="v" id="statAValue">0</div></div>
+    <div class="stat" id="statB"><div class="k" id="statBLabel">Recorde</div><div class="v" id="statBValue">0</div></div>
     <div class="stat time" id="timeStat"><div class="k">Tempo</div><div class="v" id="time">60</div></div>
     <button class="iconbtn" id="mute" aria-label="Ativar ou desativar som">🔊</button>
   </div>
 
-  <div class="ticket-wrap">
-    <div class="ticket" id="ticket">
-      <div>
-        <div class="lbl">Pedido da mesa</div>
-        <div class="nm" id="ticketName">—</div>
-      </div>
-      <div class="food" id="ticketFood">🍣</div>
-      <div class="stamp">急</div>
+  <div class="daily-wrap">
+    <div class="daily">
+      <span class="lbl">★ Prato do dia</span>
+      <span class="food" id="dailyFood">🍣</span>
+      <span class="nm" id="dailyName">—</span>
     </div>
   </div>
 
-  <div class="combo" id="combo"></div>
-  <div class="belt" id="belt"></div>
+  <div class="lanes" id="lanes">
+    <div class="lane" data-player="1">
+      <span class="lane-tag">Jogador 1</span>
+      <div class="ticket-wrap">
+        <div class="ticket" id="ticketP1">
+          <div>
+            <div class="lbl">Pedido da mesa</div>
+            <div class="nm" id="ticketNameP1">—</div>
+          </div>
+          <div class="food" id="ticketFoodP1">🍣</div>
+          <div class="stamp">祭</div>
+        </div>
+      </div>
+      <div class="combo" id="comboP1"></div>
+      <div class="belt" id="beltP1"></div>
+    </div>
+    <div class="lane" data-player="2">
+      <span class="lane-tag">Jogador 2</span>
+      <div class="ticket-wrap">
+        <div class="ticket" id="ticketP2">
+          <div>
+            <div class="lbl">Pedido da mesa</div>
+            <div class="nm" id="ticketNameP2">—</div>
+          </div>
+          <div class="food" id="ticketFoodP2">🍣</div>
+          <div class="stamp">祭</div>
+        </div>
+      </div>
+      <div class="combo" id="comboP2"></div>
+      <div class="belt" id="beltP2"></div>
+    </div>
+  </div>
 
   <!-- start -->
   <div class="overlay" id="startScreen">
-    <div class="big-title"><span class="jp">かいてん</span>ESTEIRA <em>RUSH</em></div>
-    <p class="sub">Os pratos passam na esteira. Toque só no que está no <b>pedido da mesa</b> lá em cima. Encadeie acertos pro combo subir — e fuja do wasabi!</p>
+    <div class="big-title"><span class="jp">寿司祭 · FESTIVAL DE SUSHI</span>IOSHI <em>RUSH</em></div>
+    <p class="sub">Enquanto a mesa não chega, encare o festival! Os pratos passam na esteira — toque só no que está no <b>pedido da mesa</b> lá em cima. Encadeie acertos pro combo subir e fuja do wasabi!</p>
     <div class="how">
       <div><span class="e">🍣</span> toque no pedido</div>
+      <div><span class="e">★</span> prato do dia rende mais</div>
       <div><span class="e">🟢</span> nunca no wasabi</div>
       <div><span class="e">🔥</span> combo = mais pontos</div>
     </div>
-    <button class="cta" id="startBtn">Começar</button>
-    <p class="sub" style="font-size:12px;opacity:.55;">60 segundos • quanto mais rápido, mais vale</p>
+    <div class="mode-select">
+      <button class="cta" id="mode1Btn">1 Jogador</button>
+      <button class="cta secondary" id="mode2Btn">2 Jogadores</button>
+    </div>
+    <p class="sub" style="font-size:12px;opacity:.55;">60 segundos de festival • quanto mais rápido, mais vale</p>
   </div>
 
   <!-- game over -->
   <div class="overlay hidden" id="overScreen">
-    <div class="final-lbl">Fim do rush</div>
+    <div class="final-lbl" id="overLabel">Fim do rush</div>
     <div class="final-score" id="finalScore">0</div>
+    <div class="duo-scores hidden" id="duoScores">
+      <div class="duo-score p1"><span class="duo-name">Jogador 1</span><span class="duo-val" id="duoP1">0</span></div>
+      <div class="duo-vs">×</div>
+      <div class="duo-score p2"><span class="duo-name">Jogador 2</span><span class="duo-val" id="duoP2">0</span></div>
+    </div>
     <div class="newbest" id="newBest" style="visibility:hidden;">✦ Novo recorde! ✦</div>
     <div class="sub" id="overMsg"></div>
     <button class="cta" id="againBtn">Jogar de novo</button>
@@ -294,19 +386,26 @@
     {key:'dango',   emoji:'🍡', name:'Dango'},
   ];
   const GAME_TIME = 60;
+  const BEST_KEY = 'ioshiFestivalRushBest';
+  const DAILY_BONUS = 0.5; // +50% em cima do prato do dia
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const $ = s => document.querySelector(s);
-  const app=$('#app'), belt=$('#belt'), scoreEl=$('#score'), bestEl=$('#best'),
-        timeEl=$('#time'), timeStat=$('#timeStat'), comboEl=$('#combo'),
-        ticket=$('#ticket'), ticketName=$('#ticketName'), ticketFood=$('#ticketFood'),
+  const app=$('#app'), lanesEl=$('#lanes'),
+        statALabel=$('#statALabel'), statAValue=$('#statAValue'),
+        statBEl=$('#statB'), statBLabel=$('#statBLabel'), statBValue=$('#statBValue'),
+        timeEl=$('#time'), timeStat=$('#timeStat'),
+        dailyFoodEl=$('#dailyFood'), dailyNameEl=$('#dailyName'),
         startScreen=$('#startScreen'), overScreen=$('#overScreen'),
-        finalScore=$('#finalScore'), newBest=$('#newBest'), overMsg=$('#overMsg'),
+        overLabel=$('#overLabel'), finalScore=$('#finalScore'),
+        duoScores=$('#duoScores'), duoP1=$('#duoP1'), duoP2=$('#duoP2'),
+        newBest=$('#newBest'), overMsg=$('#overMsg'),
         redflash=$('#redflash'), muteBtn=$('#mute');
 
-  let running=false, score=0, best=0, combo=0, timeLeft=GAME_TIME, elapsed=0,
-      target=null, plates=[], lastSpawn=0, lastTs=0, targetTimer=0, hitsOnTarget=0,
-      muted=false, idc=0;
+  let running=false, best=Number(localStorage.getItem(BEST_KEY))||0,
+      timeLeft=GAME_TIME, elapsed=0, lastTs=0, muted=false, mode=1, dailyDish=null;
+
+  statBValue.textContent = best;
 
   // ---- audio ----
   let ac=null;
@@ -325,6 +424,7 @@
     }catch(e){}
   }
   const sGood=()=>{beep(660,0.09,'triangle',0.08);setTimeout(()=>beep(880,0.09,'triangle',0.07),55);};
+  const sStar=()=>{beep(660,0.09,'triangle',0.08);setTimeout(()=>beep(880,0.09,'triangle',0.08),55);setTimeout(()=>beep(1180,0.12,'triangle',0.07),110);};
   const sBad =()=>beep(150,0.22,'sawtooth',0.09);
   const sMiss=()=>beep(300,0.1,'sine',0.05);
 
@@ -342,23 +442,37 @@
     };
   }
 
-  function newTarget(){
-    let n; do{ n=rand(SUSHI); }while(target && n.key===target.key);
-    target=n; hitsOnTarget=0; targetTimer=0;
-    ticketName.textContent=n.name; ticketFood.textContent=n.emoji;
-    ticket.classList.remove('flip'); void ticket.offsetWidth; ticket.classList.add('flip');
+  // ---- lane (uma esteira / um jogador) ----
+  function makeLane(n){
+    return {
+      n,
+      ticket:$('#ticketP'+n), ticketName:$('#ticketNameP'+n), ticketFood:$('#ticketFoodP'+n),
+      belt:$('#beltP'+n), comboEl:$('#comboP'+n),
+      target:null, hitsOnTarget:0, targetTimer:0,
+      plates:[], lastSpawn:0, idc:0,
+      combo:0, score:0,
+    };
+  }
+  const laneP1=makeLane(1), laneP2=makeLane(2);
+  let lanes=[laneP1];
+
+  function newTarget(lane){
+    let n; do{ n=rand(SUSHI); }while(lane.target && n.key===lane.target.key);
+    lane.target=n; lane.hitsOnTarget=0; lane.targetTimer=0;
+    lane.ticketName.textContent=n.name; lane.ticketFood.textContent=n.emoji;
+    lane.ticket.classList.remove('flip'); void lane.ticket.offsetWidth; lane.ticket.classList.add('flip');
   }
 
-  function spawnPlate(){
-    const d=difficulty();
-    let type, food;
+  function spawnPlate(lane,d){
+    let type;
     if(Math.random()<d.wasabi){ type='wasabi'; }
-    else if(Math.random()<0.46){ type=target; }   // bias toward current order
+    else if(Math.random()<0.46){ type=lane.target; }   // bias toward current order
     else { type=rand(SUSHI); }
 
     const p=document.createElement('div');
-    p.className='plate'+(type==='wasabi'?' wasabi':'');
-    p.dataset.id=(++idc);
+    const isDaily = type!=='wasabi' && dailyDish && type.key===dailyDish.key;
+    p.className='plate'+(type==='wasabi'?' wasabi':'')+(isDaily?' daily':'');
+    p.dataset.id=(++lane.idc);
     const disc=document.createElement('div'); disc.className='disc';
     if(type==='wasabi'){
       const m=document.createElement('div'); m.className='wmound'; disc.appendChild(m);
@@ -366,63 +480,74 @@
       const f=document.createElement('div'); f.className='food'; f.textContent=type.emoji; disc.appendChild(f);
     }
     p.appendChild(disc);
-    const obj={id:idc, el:p, x:-60, type, hit:false, bob:Math.random()*Math.PI*2};
+    const obj={id:lane.idc, el:p, x:-60, type, hit:false, bob:Math.random()*Math.PI*2};
     p.style.transform=`translate(${obj.x}px,0)`;
-    p.addEventListener('pointerdown', ev=>{ev.preventDefault();onTap(obj);},{passive:false});
-    belt.appendChild(p);
-    plates.push(obj);
+    p.addEventListener('pointerdown', ev=>{ev.preventDefault();onTap(lane,obj);},{passive:false});
+    lane.belt.appendChild(p);
+    lane.plates.push(obj);
   }
 
-  function floatText(x,y,txt,bad){
-    const f=document.createElement('div'); f.className='float'+(bad?' bad':'');
+  function floatText(lane,x,y,txt,bad,star){
+    const f=document.createElement('div'); f.className='float'+(bad?' bad':'')+(star?' star':'');
     f.textContent=txt; f.style.left=x+'px'; f.style.top=y+'px';
-    belt.appendChild(f); setTimeout(()=>f.remove(),800);
+    lane.belt.appendChild(f); setTimeout(()=>f.remove(),800);
   }
 
-  function showCombo(){
-    if(combo<2) return;
-    comboEl.textContent='🔥 Combo x'+combo;
-    comboEl.classList.remove('show'); void comboEl.offsetWidth; comboEl.classList.add('show');
+  function showCombo(lane){
+    if(lane.combo<2) return;
+    lane.comboEl.textContent='🔥 Combo x'+lane.combo;
+    lane.comboEl.classList.remove('show'); void lane.comboEl.offsetWidth; lane.comboEl.classList.add('show');
   }
 
-  function onTap(obj){
+  function updateHud(){
+    if(mode===1){
+      statAValue.textContent = laneP1.score;
+      statBValue.textContent = best;
+    } else {
+      statAValue.textContent = laneP1.score;
+      statBValue.textContent = laneP2.score;
+    }
+  }
+
+  function onTap(lane,obj){
     if(!running || obj.hit) return;
-    const rect=obj.el.style.transform;
-    const bx=obj.x, by=belt.clientHeight/2-48;
+    const bx=obj.x, by=lane.belt.clientHeight/2-48;
     obj.el.style.setProperty('--gx',bx+'px');
     obj.el.style.setProperty('--gy','0px');
 
     if(obj.type==='wasabi'){
-      obj.hit=true; combo=0;
+      obj.hit=true; lane.combo=0;
       timeLeft=Math.max(0,timeLeft-3);
       obj.el.classList.add('wrong');
-      floatText(bx, by, '-3s', true);
+      floatText(lane, bx, by, '-3s', true);
       sBad(); flashRed(); shake();
-      cleanup(obj,300);
-    } else if(target && obj.type.key===target.key){
-      obj.hit=true; combo++; hitsOnTarget++;
-      const mult=Math.min(1+Math.floor(combo/4),5);
-      const pts=10*mult;
-      score+=pts; scoreEl.textContent=score;
+      cleanup(lane,obj,300);
+    } else if(lane.target && obj.type.key===lane.target.key){
+      obj.hit=true; lane.combo++; lane.hitsOnTarget++;
+      const mult=Math.min(1+Math.floor(lane.combo/4),5);
+      const base=10*mult;
+      const isDaily = dailyDish && lane.target.key===dailyDish.key;
+      const pts = isDaily ? Math.round(base*(1+DAILY_BONUS)) : base;
+      lane.score+=pts; updateHud();
       obj.el.classList.add('grabbed');
-      floatText(bx, by, '+'+pts, false);
-      showCombo(); sGood();
-      cleanup(obj,320);
-      if(hitsOnTarget>=6) newTarget();
+      floatText(lane, bx, by, '+'+pts+(isDaily?' ★':''), false, isDaily);
+      showCombo(lane); isDaily?sStar():sGood();
+      cleanup(lane,obj,320);
+      if(lane.hitsOnTarget>=6) newTarget(lane);
     } else {
-      obj.hit=true; combo=0;
+      obj.hit=true; lane.combo=0;
       timeLeft=Math.max(0,timeLeft-1);
       obj.el.classList.add('wrong');
-      floatText(bx, by, 'errou!', true);
+      floatText(lane, bx, by, 'errou!', true);
       sMiss();
-      cleanup(obj,300);
+      cleanup(lane,obj,300);
     }
   }
 
-  function cleanup(obj,delay){
+  function cleanup(lane,obj,delay){
     setTimeout(()=>{
       obj.el.remove();
-      plates=plates.filter(p=>p!==obj);
+      lane.plates=lane.plates.filter(p=>p!==obj);
     },delay);
     obj.dead=true;
   }
@@ -434,30 +559,29 @@
     if(!running) return;
     if(!lastTs) lastTs=ts;
     const dt=Math.min(0.05,(ts-lastTs)/1000); lastTs=ts;
-    elapsed+=dt; timeLeft-=dt; targetTimer+=dt;
-
+    elapsed+=dt; timeLeft-=dt;
     const d=difficulty();
-    // spawn
-    if(ts-lastSpawn > d.spawn){ lastSpawn=ts; spawnPlate(); }
-    // rotate order on a timer too
-    if(targetTimer>9) newTarget();
 
-    // move plates
-    const w=belt.clientWidth;
-    for(const p of plates){
-      if(p.dead) continue;
-      p.x += d.speed*dt;
-      p.bob += dt*3;
-      const y=reduceMotion?0:Math.sin(p.bob)*4;
-      p.el.style.transform=`translate(${p.x}px,${y}px)`;
-      if(p.x>w+60){
-        if(!p.hit && target && p.type!=='wasabi' && p.type.key===target.key){ combo=0; }
-        p.dead=true; p.el.remove();
+    for(const lane of lanes){
+      lane.targetTimer+=dt;
+      if(ts-lane.lastSpawn > d.spawn){ lane.lastSpawn=ts; spawnPlate(lane,d); }
+      if(lane.targetTimer>9) newTarget(lane);
+
+      const w=lane.belt.clientWidth;
+      for(const p of lane.plates){
+        if(p.dead) continue;
+        p.x += d.speed*dt;
+        p.bob += dt*3;
+        const y=reduceMotion?0:Math.sin(p.bob)*4;
+        p.el.style.transform=`translate(${p.x}px,${y}px)`;
+        if(p.x>w+60){
+          if(!p.hit && lane.target && p.type!=='wasabi' && p.type.key===lane.target.key){ lane.combo=0; }
+          p.dead=true; p.el.remove();
+        }
       }
+      lane.plates=lane.plates.filter(p=>!p.dead);
     }
-    plates=plates.filter(p=>!p.dead);
 
-    // hud
     const tl=Math.max(0,Math.ceil(timeLeft));
     timeEl.textContent=tl;
     timeStat.classList.toggle('low',tl<=10);
@@ -466,36 +590,70 @@
     requestAnimationFrame(tick);
   }
 
-  function startGame(){
-    running=true; score=0; combo=0; timeLeft=GAME_TIME; elapsed=0;
-    lastSpawn=0; lastTs=0; targetTimer=0; hitsOnTarget=0; target=null; idc=0;
-    plates.forEach(p=>p.el.remove()); plates=[];
-    scoreEl.textContent='0'; timeEl.textContent=GAME_TIME; timeStat.classList.remove('low');
+  function resetLane(lane){
+    lane.score=0; lane.combo=0; lane.target=null; lane.hitsOnTarget=0; lane.targetTimer=0;
+    lane.lastSpawn=0; lane.idc=0;
+    lane.plates.forEach(p=>p.el.remove()); lane.plates=[];
+  }
+
+  function startGame(selectedMode){
+    mode = selectedMode || mode;
+    running=true; timeLeft=GAME_TIME; elapsed=0; lastTs=0;
+
+    dailyDish = rand(SUSHI);
+    dailyFoodEl.textContent=dailyDish.emoji; dailyNameEl.textContent=dailyDish.name;
+
+    lanes = mode===2 ? [laneP1,laneP2] : [laneP1];
+    lanesEl.classList.toggle('duo', mode===2);
+    resetLane(laneP1); resetLane(laneP2);
+    lanes.forEach(newTarget);
+
+    statALabel.textContent = mode===2 ? 'Jogador 1' : 'Pontos';
+    statBLabel.textContent = mode===2 ? 'Jogador 2' : 'Recorde';
+    statBEl.classList.toggle('p2', mode===2);
+    updateHud();
+    timeEl.textContent=GAME_TIME; timeStat.classList.remove('low');
     startScreen.classList.add('hidden'); overScreen.classList.add('hidden');
-    belt.classList.remove('paused');
-    newTarget();
+    laneP1.belt.classList.remove('paused'); laneP2.belt.classList.remove('paused');
     // unlock audio on gesture
     try{ ac=ac||new (window.AudioContext||window.webkitAudioContext)(); if(ac.state==='suspended')ac.resume(); }catch(e){}
     requestAnimationFrame(tick);
   }
 
   function endGame(){
-    running=false; belt.classList.add('paused');
-    finalScore.textContent=score;
-    const isBest=score>best;
-    if(isBest){ best=score; bestEl.textContent=best; }
+    running=false; laneP1.belt.classList.add('paused'); laneP2.belt.classList.add('paused');
+
+    const topScore = mode===2 ? Math.max(laneP1.score,laneP2.score) : laneP1.score;
+    const isBest = topScore>best;
+    if(isBest){ best=topScore; localStorage.setItem(BEST_KEY,String(best)); }
     newBest.style.visibility=isBest?'visible':'hidden';
-    overMsg.textContent = score>=400 ? 'Itamae raiz. 🍶'
-                        : score>=200 ? 'Bom ritmo na esteira!'
-                        : 'Aquece que a próxima rende mais.';
-    plates.forEach(p=>p.el.remove()); plates=[];
+
+    if(mode===2){
+      finalScore.classList.add('hidden');
+      duoScores.classList.remove('hidden');
+      duoP1.textContent=laneP1.score; duoP2.textContent=laneP2.score;
+      overLabel.textContent = laneP1.score===laneP2.score ? 'Empate!'
+                             : (laneP1.score>laneP2.score ? 'Jogador 1 venceu!' : 'Jogador 2 venceu!');
+      overMsg.textContent = 'Fim do festival — quem serviu mais rápido?';
+    } else {
+      duoScores.classList.add('hidden');
+      finalScore.classList.remove('hidden');
+      finalScore.textContent=laneP1.score;
+      overLabel.textContent='Fim do rush';
+      overMsg.textContent = topScore>=400 ? 'Itamae do Ioshi! 🍶'
+                          : topScore>=200 ? 'Bom ritmo no festival!'
+                          : 'Pede mais uma rodada que a próxima rende.';
+    }
+
+    lanes.forEach(l=>{ l.plates.forEach(p=>p.el.remove()); l.plates=[]; });
     overScreen.classList.remove('hidden');
   }
 
-  $('#startBtn').addEventListener('click',startGame);
-  $('#againBtn').addEventListener('click',startGame);
+  $('#mode1Btn').addEventListener('click',()=>startGame(1));
+  $('#mode2Btn').addEventListener('click',()=>startGame(2));
+  $('#againBtn').addEventListener('click',()=>startGame(mode));
   document.addEventListener('keydown',e=>{
-    if((e.code==='Space'||e.code==='Enter') && !running){ e.preventDefault(); startGame(); }
+    if((e.code==='Space'||e.code==='Enter') && !running){ e.preventDefault(); startGame(mode); }
   });
 })();
 </script>
